@@ -1,0 +1,34 @@
+<div class="login-container">
+  <div class="login-card">
+    <h2> Cafetín</h2>
+    
+    <div class="form-group">
+    <input 
+        type="email" 
+        placeholder="Correo electrónico"
+        [value]="email"
+        (input)="email = $event.target.value"
+        class="form-input">
+    </div>
+    
+    <div class="form-group">
+      <input 
+        type="password" 
+        placeholder="Contraseña"
+        [value]="password"
+        (input)="password = $event.target.value"
+        class="form-input">
+    </div>
+    
+    <button (click)="login()" class="login-btn">
+      INGRESAR
+    </button>
+
+    <div class="test-users">
+      <h4>Usuarios de prueba:</h4>
+      <p>cliente@cafetin.com / 123456</p>
+      <p>empleado@cafetin.com / 123456</p>
+      <p>admin@cafetin.com / 123456</p>
+    </div>
+  </div>
+</div>

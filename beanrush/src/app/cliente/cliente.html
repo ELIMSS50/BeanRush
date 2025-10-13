@@ -1,0 +1,34 @@
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h2>☕ Cafetín</h2>
+    <div>
+      <span>Hola, {{user?.name}}</span>
+      <button (click)="logout()" class="logout-btn">Salir</button>
+    </div>
+  </div>
+
+  <!-- Menú -->
+  <div class="menu-section">
+    <h3>Menú</h3>
+    <div class="products-grid">
+      <div *ngFor="let product of products" class="product-card">
+        <h4>{{product.name}}</h4>
+        <p>${{product.price}}</p>
+        <button (click)="addToCart(product)" class="add-btn">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Carrito -->
+  <div class="cart-section">
+    <h3>Tu Pedido ({{cart.length}})</h3>
+    <div *ngFor="let item of cart" class="cart-item">
+      {{item.name}} - ${{item.price}}
+    </div>
+    <div class="total">Total: ${{total}}</div>
+    <button class="order-btn" [disabled]="cart.length === 0">
+      HACER PEDIDO
+    </button>
+  </div>
+</div>

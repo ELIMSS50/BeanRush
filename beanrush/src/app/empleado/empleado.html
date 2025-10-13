@@ -1,0 +1,34 @@
+<div class="container">
+  <div class="header">
+    <h2>☕ Cafetín - Empleado</h2>
+    <div>
+      <span>{{user?.name}}</span>
+      <button (click)="logout()" class="logout-btn">Salir</button>
+    </div>
+  </div>
+
+  <!-- Órdenes Pendientes -->
+  <div class="orders-section">
+    <h3>🆕 Nuevas Órdenes</h3>
+    <div *ngFor="let order of getPendingOrders()" class="order-card">
+      <h4>#{{order.number}} - {{order.table}}</h4>
+      <p>{{order.items}}</p>
+      <p><strong>${{order.total}}</strong></p>
+      <button (click)="changeOrderStatus(order, 'preparing')" class="action-btn">
+        ✅ Preparar
+      </button>
+    </div>
+  </div>
+
+  <!-- Órdenes en Preparación -->
+  <div class="orders-section">
+    <h3>🧑‍🍳 En Preparación</h3>
+    <div *ngFor="let order of getPreparingOrders()" class="order-card preparing">
+      <h4>#{{order.number}} - {{order.table}}</h4>
+      <p>{{order.items}}</p>
+      <button (click)="changeOrderStatus(order, 'completed')" class="action-btn ready">
+        ✅ Listo
+      </button>
+    </div>
+  </div>
+</div>
