@@ -1,34 +1,115 @@
 <div class="container">
   <!-- Header -->
   <div class="header">
-    <h2> Cafetín</h2>
-    <div>
-      <span>Hola, {{user?.name}}</span>
-      <button (click)="logout()" class="logout-btn">Salir</button>
+    <div class="brand">
+      <div class="logo">☕</div>
+      <h2>Cafetín</h2>
+    </div>
+    <div class="user-info">
+      <span class="welcome">¡Hola, {{user?.name}}!</span>
+      <button (click)="logout()" class="logout-btn">
+        Salir
+      </button>
     </div>
   </div>
 
-  <!-- Menú -->
-  <div class="menu-section">
-    <h3>Menú</h3>
-    <div class="products-grid">
-      <div *ngFor="let product of products" class="product-card">
-        <h4>{{product.name}}</h4>
-        <p>${{product.price}}</p>
-        <button (click)="addToCart(product)" class="add-btn">+</button>
+  <!-- Contenido principal -->
+  <div class="main-content">
+    <!-- Menú -->
+    <div class="menu-section">
+      <div class="section-header">
+        <h3>Nuestro Menú</h3>
+        <p>Selecciona tus productos favoritos</p>
+      </div>
+      
+      <!-- Filtros por categoría -->
+      <div class="category-filters">
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedCategory === 'all'"
+          (click)="filterProducts('all')">
+          Todos
+        </button>
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedCategory === 'bebidas'"
+          (click)="filterProducts('bebidas')">
+          Bebidas
+        </button>
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedCategory === 'comida'"
+          (click)="filterProducts('comida')">
+          Comida
+        </button>
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedCategory === 'postres'"
+          (click)="filterProducts('postres')">
+          Postres
+        </button>
+      </div>
+      
+      <div class="products-grid">
+        <div *ngFor="let product of filteredProducts" class="product-card">
+          <div class="product-image">
+            <div class="image-placeholder">{{product.name.charAt(0)}}</div>
+          </div>
+          <div class="product-info">
+            <h4 class="product-name">{{product.name}}</h4>
+            <p class="product-category">{{product.category}}</p>
+            <div class="product-footer">
+              <span class="product-price">${{product.price}}</span>
+              <button (click)="addToCart(product)" class="action-btn">
+                <span class="add-icon">+</span>
+                Agregar
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Carrito -->
-  <div class="cart-section">
-    <h3>Tu Pedido ({{cart.length}})</h3>
-    <div *ngFor="let item of cart" class="cart-item">
-      {{item.name}} - ${{item.price}}
+    <!-- Carrito -->
+    <div class="cart-section">
+      <div class="section-header">
+        <h3>Tu Pedido</h3>
+        <div class="cart-badge">{{cart.length}}</div>
+      </div>
+      
+      <div class="cart-items">
+        <div *ngIf="cart.length === 0" class="empty-cart">
+          <div class="empty-icon">🛒</div>
+          <p>Tu carrito está vacío</p>
+          <small>Agrega productos del menú</small>
+        </div>
+        
+        <div *ngFor="let item of cart; let i = index" class="cart-item">
+          <div class="item-info">
+            <span class="item-name">{{item.name}}</span>
+            <div class="item-price">${{item.price}} c/u</div>
+            <div class="quantity-controls">
+              <button class="quantity-btn" (click)="decreaseQuantity(i)"[disabled]="item.quantity === 1">−</button>
+              <span class="quantity"> {{item.quantity}} </span>
+              <button class="quantity-btn" (click)="increaseQuantity(i)">+</button>
+            </div>
+          </div>
+          <div class="item-total">
+            ${{item.price * item.quantity}}
+            <button class="remove-btn" (click)="removeFromCart(i)" title="Eliminar">×</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="cart-footer">
+        <div class="total-section">
+          <span class="total-label">Total:</span>
+          <span class="total-amount">${{total}}</span>
+        </div>
+        <button class="order-btn" [disabled]="cart.length === 0">
+          Hacer pedido
+        </button>
+      </div>
     </div>
-    <div class="total">Total: ${{total}}</div>
-    <button class="order-btn" [disabled]="cart.length === 0">
-      HACER PEDIDO
-    </button>
   </div>
 </div>
