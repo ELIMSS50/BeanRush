@@ -1,9 +1,15 @@
 <div class="container">
+  <!-- Header -->
   <div class="header">
-    <h2>☕ Cafetín - Administrador</h2>
-    <div>
-      <span>{{user?.name}}</span>
-      <button (click)="logout()" class="logout-btn">Salir</button>
+    <div class="brand">
+      <div class="logo">☕</div>
+      <h2>Cafetín</h2>
+    </div>
+    <div class="user-info">
+      <span class="welcome">¡Hola, {{user?.name}}!</span>
+      <button (click)="logout()" class="logout-btn">
+        Salir
+      </button>
     </div>
   </div>
 
@@ -11,4 +17,95 @@
     <h3>Panel de Administración</h3>
     <p>Aquí irán los controles de administrador...</p>
   </div>
+
+      <!-- Filtros por categoría -->
+      <div class="category-filters">
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedCategory === 'all'"
+          (click)="filterProducts('all')">
+          Todos
+        </button>
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedCategory === 'bebidas'"
+          (click)="filterProducts('bebidas')">
+          Bebidas
+        </button>
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedCategory === 'comida'"
+          (click)="filterProducts('comida')">
+          Comida
+        </button>
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedCategory === 'postres'"
+          (click)="filterProducts('postres')">
+          Postres
+      </button>
+      </div>
+        
+      <div class="products-grid">
+        <div *ngFor="let product of filteredProducts" class="product-card">
+          <div class="product-image">
+            <div class="image-placeholder">{{product.name.charAt(0)}}</div>
+          </div>
+          <div class="product-info">
+            <h4 class="product-name">{{product.name}}</h4>
+            <p class="product-category">{{product.category}}</p>
+            <div class="product-footer">
+              <span class="product-price">${{product.price}}</span>
+            </div>
+            <div class="container-btn">
+          <button class="action-btn-cancel" (click)="eraseProduct(product)" title="Eliminar">
+            ❌
+          </button>
+          <button (click)="modifyProduct(product, 'modify')" class="action-btn">
+            ✏️
+          </button>
+        </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtros por categoría -->
+      <div class="category-filters">
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedStatusOrder === 'all'"
+          (click)="filterOrder('all')">
+          Todos
+        </button>
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedStatusOrder === 'pending'"
+          (click)="filterOrder('pending')">
+          Nuevas órdenes
+        </button>
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedStatusOrder === 'preparing'"
+          (click)="filterOrder('preparing')">
+          En preparación
+        </button>
+      </div>
+
+      <div class="cart-section">
+        <div *ngFor="let order of filteredOrder" class="cart-item">
+        <div class="container-order">
+          <h4>#{{order.number}} - {{order.table}}</h4>
+          <p>{{order.items}}</p>
+          <p><strong>${{order.total}}</strong></p>
+        </div>
+        <div class="container-btn">
+          <button (click)="cancelOrder(order, 'cancel')" class="action-btn-cancel">
+            ❌ Cancelar
+          </button>
+          <button (click)="changeOrderStatus(order, 'preparing')" class="action-btn">
+            ✅ Preparar
+          </button>
+        </div>
+      </div>
+    </div>
 </div>

@@ -47,4 +47,9 @@ export class Login {
         this.router.navigate(['/customer']);
     }
   }
+
+  newAccount() {
+    localStorage.removeItem('currentUser');
+    window.location.href='Sing up';
+  }
 }
