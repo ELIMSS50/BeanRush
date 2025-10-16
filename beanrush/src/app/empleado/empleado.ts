@@ -35,6 +35,6 @@ export class Empleado implements OnInit {
   constructor(private router: Router) {}
   logout() {
     localStorage.removeItem('currentUser');
-    window.location.reload();
+    window.location.href='login';
   }
 }
