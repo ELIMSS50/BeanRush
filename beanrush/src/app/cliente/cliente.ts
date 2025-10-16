@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-customer',
@@ -86,6 +87,7 @@ export class Cliente implements OnInit {
     this.total = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   }
 
+  constructor(private router: Router) {}
   logout() {
     localStorage.removeItem('currentUser');
     window.location.href='login';

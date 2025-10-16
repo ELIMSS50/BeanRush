@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-employee',
@@ -31,6 +32,7 @@ export class Empleado implements OnInit {
     return this.orders.filter(order => order.status === 'preparing');
   }
 
+  constructor(private router: Router) {}
   logout() {
     localStorage.removeItem('currentUser');
     window.location.href='login';
