@@ -54,14 +54,14 @@
             <h4 class="product-name">{{product.name}}</h4>
             <p class="product-category">{{product.category}}</p>
             <div class="product-footer">
-              <span class="product-price">${{product.price}}</span>
+              <span class="product-price">{{product.price | currency:'USD':'symbol':'1.0-0'}}</span>
             </div>
             <div class="container-btn">
           <button class="action-btn-cancel" (click)="eraseProduct(product)" title="Eliminar">
-            ❌
+            Eliminar
           </button>
           <button (click)="modifyProduct(product, 'modify')" class="action-btn">
-            ✏️
+            Editar
           </button>
         </div>
           </div>
@@ -95,7 +95,7 @@
         <div class="container-order">
           <h4>#{{order.number}} - {{order.table}}</h4>
           <p>{{order.items}}</p>
-          <p><strong>${{order.total}}</strong></p>
+          <p><strong>{{order.total | currency:'USD':'symbol':'1.0-0'}}</strong></p>
         </div>
         <div class="container-btn">
           <button (click)="cancelOrder(order, 'cancel')" class="action-btn-cancel">

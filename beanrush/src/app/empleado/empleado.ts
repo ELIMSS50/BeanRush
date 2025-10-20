@@ -31,6 +31,10 @@ export class Empleado implements OnInit {
   getPreparingOrders() {
     return this.orders.filter(order => order.status === 'preparing');
   }
+  proyectar(){
+    localStorage.removeItem('currentUser');
+    window.location.href='pantalla';
+  }
 
   constructor(private router: Router) {}
   logout() {

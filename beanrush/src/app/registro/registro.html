@@ -1,0 +1,89 @@
+<div class="register-container">
+  <div class="register-card">
+    <h2>BeanRush</h2>
+    <h3>Crear Cuenta</h3>
+    
+    <form (ngSubmit)="onRegister()" class="register-form">
+      <!-- Nombre -->
+      <div class="form-group">
+        <label for="name" class="visually-hidden">Nombre completo</label>
+        <input 
+          id="name"
+          type="text" 
+          placeholder="Nombre completo"
+          [(ngModel)]="user.name"
+          name="name"
+          class="form-input"
+          [class.error]="errors.name"
+          aria-describedby="name-error"
+          required>
+        <div id="name-error" class="error-message" *ngIf="errors.name" role="alert">{{ errors.name }}</div>
+      </div>
+      
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email" class="visually-hidden">Correo electrónico</label>
+        <input 
+          id="email"
+          type="email" 
+          placeholder="Correo electrónico"
+          [(ngModel)]="user.email"
+          name="email"
+          class="form-input"
+          [class.error]="errors.email"
+          aria-describedby="email-error"
+          required>
+        <div id="email-error" class="error-message" *ngIf="errors.email" role="alert">{{ errors.email }}</div>
+      </div>
+      
+      <!-- Contraseña -->
+      <div class="form-group">
+        <label for="password" class="visually-hidden">Contraseña</label>
+        <input 
+          id="password"
+          type="password" 
+          placeholder="Contraseña"
+          [(ngModel)]="user.password"
+          name="password"
+          class="form-input"
+          [class.error]="errors.password"
+          aria-describedby="password-error"
+          required
+          minlength="6">
+        <div id="password-error" class="error-message" *ngIf="errors.password" role="alert">{{ errors.password }}</div>
+      </div>
+      
+      <!-- Confirmar Contraseña -->
+      <div class="form-group">
+        <label for="confirmPassword" class="visually-hidden">Confirmar contraseña</label>
+        <input 
+          id="confirmPassword"
+          type="password" 
+          placeholder="Confirmar contraseña"
+          [(ngModel)]="user.confirmPassword"
+          name="confirmPassword"
+          class="form-input"
+          [class.error]="errors.confirmPassword"
+          aria-describedby="confirm-password-error"
+          required>
+        <div id="confirm-password-error" class="error-message" *ngIf="errors.confirmPassword" role="alert">
+          {{ errors.confirmPassword }}
+        </div>
+      </div>
+      
+  <!-- Botón Registrar -->
+      <button 
+        type="submit" 
+        class="register-btn"
+        [disabled]="isLoading">
+        {{ isLoading ? 'REGISTRANDO...' : 'REGISTRARSE' }}
+      </button>
+    </form>
+
+    <!-- Link a Login -->
+    <div class="login-link">
+      ¿Ya tienes cuenta? 
+      <a (click)="goToLogin()" class="link">Ingresar</a>
+    </div>
+  </div>
+</div>

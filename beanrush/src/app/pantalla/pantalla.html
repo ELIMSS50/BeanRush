@@ -1,0 +1,40 @@
+<div class="display-container">
+  <!-- Encabezado -->
+  <div class="display-header">
+    <h1 class="display-title">Ordenes</h1>
+    <div class="display-time">
+      {{ currentTime | date:'HH:mm:ss' }}
+    </div>
+  </div>
+
+  <!-- Grid de Órdenes -->
+  <div class="orders-grid">
+    <div *ngFor="let order of orders" 
+         class="order-card {{ getStatusColor(order.status) }}">
+      
+      <div class="order-header">
+        <span class="order-number">#{{ order.number }}</span>
+        <span class="order-table">{{ order.table }}</span>
+        <span class="order-total">${{ order.total }}</span>
+      </div>
+
+      <div class="order-items">
+        {{ order.items }}
+      </div>
+
+      <div class="order-footer">
+        <span class="order-time" *ngIf="order.status === 'preparing'">
+          ⏱ {{ order.time }} min
+        </span>
+        <span class="order-status {{ getStatusColor(order.status) }}-text">
+          {{ getStatusText(order.status) }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="orders.length === 0" class="no-orders">
+    <h2>No hay órdenes activas</h2>
+    <p>Valla ha estado muy solo por aquí</p>
+  </div>
+</div>

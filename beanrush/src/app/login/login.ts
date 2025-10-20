@@ -12,9 +12,9 @@ export class Login {
 
   // Usuarios de prueba
   private testUsers = [
-    { email: 'cliente@cafetin.com', password: '123456', role: 'customer', name: 'Juan Cliente' },
-    { email: 'empleado@cafetin.com', password: '123456', role: 'employee', name: 'Pedro Empleado' },
-    { email: 'admin@cafetin.com', password: '123456', role: 'admin', name: 'Ana Admin' }
+    { email: 'cliente@.com', password: '123456', role: 'customer', name: 'Juan Cliente' },
+    { email: 'empleado@.com', password: '123456', role: 'employee', name: 'Pedro Empleado' },
+    { email: 'admin@.com', password: '123456', role: 'admin', name: 'Ana Admin' }
   ];
 
   constructor(private router: Router) {}
@@ -50,6 +50,6 @@ export class Login {
 
   newAccount() {
     localStorage.removeItem('currentUser');
-    window.location.href='Sing up';
+    window.location.href='/registro';
   }
 }

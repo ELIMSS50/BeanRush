@@ -1,0 +1,75 @@
+<div class="simulator-container">
+  <div class="simulator-header">
+    <h1> SIMULADOR DE PAGO</h1>
+    <div class="order-info">
+      Orden: #{{ currentOrder.number }} - Total: ${{ currentOrder.total }}
+    </div>
+  </div>
+
+  <div class="simulator-body">
+    <!-- Métodos de Pago -->
+    <div class="payment-methods">
+      <h3>MÉTODO DE PAGO</h3>
+      <div class="methods-grid">
+  <button *ngFor="let method of paymentMethods"
+    [class.selected]="selectedMethod === method"
+    (click)="selectMethod(method)"
+    [attr.aria-pressed]="selectedMethod === method"
+    class="method-btn">
+    {{ method }}
+  </button>
+      </div>
+    </div>
+
+    <!-- Campos específicos por método -->
+    <div class="payment-details" *ngIf="selectedMethod === 'EFECTIVO'">
+      <div class="input-group">
+        <label>Efectivo recibido:</label>
+   <input type="number" 
+     [(ngModel)]="cashReceived"
+     (ngModelChange)="cashReceived = +$event; calculateChange()"
+     (input)="calculateChange()"
+     min="0"
+     placeholder="0">
+      </div>
+      <div class="change-display" *ngIf="change >= 0">
+        Cambio: <span class="change-amount">{{ change | currency:'USD':'symbol':'1.0-0' }}</span>
+      </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="action-buttons">
+      <button (click)="processPayment()" 
+              class="btn-process"
+              [disabled]="selectedMethod === 'EFECTIVO' && cashReceived < currentOrder.total">
+        PROCESAR PAGO
+      </button>
+
+      <div class="simulation-buttons">
+        <button (click)="simulatePaymentSuccess()" class="btn-success">
+          PAGO EXITOSO
+        </button>
+        <button (click)="simulatePaymentFailure()" class="btn-failure">
+          PAGO RECHAZADO
+        </button>
+      </div>
+    </div>
+
+    <!-- Estado del Pago -->
+    <div class="payment-status" [class]="paymentStatus.toLowerCase().includes('exitoso') ? 'status-success' : 
+                                         paymentStatus.toLowerCase().includes('rechazado') ? 'status-failure' : 'status-processing'"
+         role="status" aria-live="polite">
+      {{ paymentStatus || 'ESPERANDO PAGO...' }}
+    </div>
+
+    <!-- Logs -->
+    <div class="payment-logs">
+      <h3>REGISTRO DE TRANSACCIONES</h3>
+      <div class="logs-container" role="log" aria-live="polite">
+        <div *ngFor="let log of paymentLogs" class="log-entry">
+          {{ log }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
