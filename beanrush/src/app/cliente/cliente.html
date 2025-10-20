@@ -59,7 +59,7 @@
             <h4 class="product-name">{{product.name}}</h4>
             <p class="product-category">{{product.category}}</p>
             <div class="product-footer">
-              <span class="product-price">${{product.price}}</span>
+                  <span class="product-price">{{product.price | currency:'USD':'symbol':'1.0-0'}}</span>
               <button (click)="addToCart(product)" class="action-btn">
                 <span class="add-icon">+</span>
                 Agregar
@@ -87,7 +87,7 @@
         <div *ngFor="let item of cart; let i = index" class="cart-item">
           <div class="item-info">
             <span class="item-name">{{item.name}}</span>
-            <div class="item-price">${{item.price}} c/u</div>
+            <div class="item-price">{{item.price | currency:'USD':'symbol':'1.0-0'}} c/u</div>
             <div class="quantity-controls">
               <button class="quantity-btn" (click)="decreaseQuantity(i)"[disabled]="item.quantity === 1">−</button>
               <span class="quantity"> {{item.quantity}} </span>
@@ -95,18 +95,18 @@
             </div>
           </div>
           <div class="item-total">
-            ${{item.price * item.quantity}}
+            {{ (item.price * item.quantity) | currency:'USD':'symbol':'1.0-0' }}
             <button class="remove-btn" (click)="removeFromCart(i)" title="Eliminar">×</button>
           </div>
         </div>
       </div>
       
       <div class="cart-footer">
-        <div class="total-section">
+          <div class="total-section">
           <span class="total-label">Total:</span>
-          <span class="total-amount">${{total}}</span>
+          <span class="total-amount">{{ total | currency:'USD':'symbol':'1.0-0' }}</span>
         </div>
-        <button class="order-btn" [disabled]="cart.length === 0">
+        <button class="order-btn" (click)="hacerPago()" [disabled]="cart.length === 0">
           Hacer pedido
         </button>
       </div>

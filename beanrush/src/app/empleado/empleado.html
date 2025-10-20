@@ -7,6 +7,9 @@
     </div>
     <div class="user-info">
       <span class="welcome">¡Hola, {{user?.name}}!</span>
+      <button (click)="proyectar()" class="logout-btn">
+        Mostar en pantalla
+      </button>
       <button (click)="logout()" class="logout-btn">
         Salir
       </button>
@@ -20,7 +23,7 @@
       <div class="container-order">
         <h4>#{{order.number}} - {{order.table}}</h4>
         <p>{{order.items}}</p>
-        <p><strong>${{order.total}}</strong></p>
+  <p><strong>{{order.total | currency:'USD':'symbol':'1.0-0'}}</strong></p>
       </div>
       <button (click)="changeOrderStatus(order, 'preparing')" class="action-btn">
         Preparar
@@ -33,7 +36,7 @@
     <h3>🧑‍🍳 En Preparación</h3>
     <div *ngFor="let order of getPreparingOrders()" class="cart-item">
       <h4>#{{order.number}} - {{order.table}}</h4>
-      <p>{{order.items}}</p>
+  <p>{{order.items}}</p>
       <button (click)="changeOrderStatus(order, 'completed')" class="action-btn ready">
         ✅ Listo
       </button>

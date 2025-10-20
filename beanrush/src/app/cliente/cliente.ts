@@ -87,6 +87,11 @@ export class Cliente implements OnInit {
     this.total = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   }
 
+  hacerPago(){
+    localStorage.removeItem('currentUser');
+    window.location.href='pagos';
+  }
+
   constructor(private router: Router) {}
   logout() {
     localStorage.removeItem('currentUser');
