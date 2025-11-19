@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const productRoutes = require('./routes/products');
+const orderRoutes = require('./routes/orders');
 
 const app = express();
 app.use(cors());
@@ -13,5 +14,6 @@ mongoose.connect('mongodb://localhost:27017/beanrush')
   .catch(err => console.error(err));
 
 app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
 
 app.listen(4000, () => console.log('Servidor corriendo en http://localhost:4000'));

@@ -18,11 +18,11 @@
 
   <!-- Órdenes Pendientes -->
   <div class="cart-section">
-    <h3>🆕 Nuevas Órdenes</h3>
+    <h3>🆕 Nuevas órdenes</h3>
     <div *ngFor="let order of getPendingOrders()" class="cart-item">
       <div class="container-order">
-        <h4>#{{order.number}} - {{order.table}}</h4>
-        <p>{{order.items}}</p>
+        <h4>#{{order.id}} - {{order.table}}</h4>
+        <p>{{ getItemsString(order) }}</p>
   <p><strong>{{order.total | currency:'USD':'symbol':'1.0-0'}}</strong></p>
       </div>
       <button (click)="changeOrderStatus(order, 'preparing')" class="action-btn">
@@ -35,8 +35,8 @@
   <div class="cart-section">
     <h3>🧑‍🍳 En Preparación</h3>
     <div *ngFor="let order of getPreparingOrders()" class="cart-item">
-      <h4>#{{order.number}} - {{order.table}}</h4>
-  <p>{{order.items}}</p>
+      <h4>#{{order.id}} - {{order.table}}</h4>
+      <p>{{ getItemsString(order) }}</p>
       <button (click)="changeOrderStatus(order, 'completed')" class="action-btn ready">
         ✅ Listo
       </button>

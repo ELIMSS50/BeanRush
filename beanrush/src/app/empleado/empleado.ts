@@ -1,44 +1,53 @@
 import { Component, OnInit } from '@angular/core';
+import { OrdersService } from '../services/orders.service';
+import { Order, Product } from '../models/order.model';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-employee',
-  templateUrl: './empleado.html'
-  ,imports: [CommonModule]
+  templateUrl: './empleado.html',
+  standalone: true,
+  imports: [CommonModule]
 })
 export class Empleado implements OnInit {
+  orders: Order[] = [];
   user: any;
-  orders = [
-    { id: 1, number: '001', table: 'Mesa 2', items: 'Café Americano x2, Sandwich de... x1', total: 120, status: 'pending' },
-    { id: 2, number: '002', table: 'Llevar', items: 'Capuchino x1', total: 30, status: 'pending' },
-    { id: 3, number: '003', table: 'Mesa 5', items: 'Té Verde x1, Galleta de Chocolate x2', total: 45, status: 'preparing' }
-  ];
+
+  constructor(private ordersService: OrdersService) {}
 
   ngOnInit() {
     const userData = localStorage.getItem('currentUser');
     this.user = userData ? JSON.parse(userData) : null;
+
+    this.ordersService.getOrders().subscribe((data: Order[]) => {
+      this.orders = data;
+    });
   }
 
-  changeOrderStatus(order: any, newStatus: string) {
+  changeOrderStatus(order: Order, newStatus: 'pending' | 'preparing' | 'done' | 'completed') {
     order.status = newStatus;
+    this.ordersService.updateOrderStatus(order.id, newStatus).subscribe();
   }
 
-  getPendingOrders() {
+  getItemsString(order: Order): string {
+    return order.items.map((item: Product) => `${item.name} x${item.qty} ($${item.price})`).join(', ');
+  }
+
+  getPendingOrders(): Order[] {
     return this.orders.filter(order => order.status === 'pending');
   }
 
-  getPreparingOrders() {
+  getPreparingOrders(): Order[] {
     return this.orders.filter(order => order.status === 'preparing');
   }
-  proyectar(){
+
+  proyectar() {
     localStorage.removeItem('currentUser');
-    window.location.href='pantalla';
+    window.location.href = 'pantalla';
   }
 
-  constructor(private router: Router) {}
   logout() {
     localStorage.removeItem('currentUser');
-    window.location.href='login';
+    window.location.href = 'login';
   }
 }
