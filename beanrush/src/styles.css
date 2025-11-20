@@ -151,6 +151,18 @@ body {
   font-size: 0.9rem;
 }
 
+.addNew-btn {
+  background: #315086;
+  color: white;
+  border: 1px solid #e9ecef;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  margin-left: auto;
+}
+
 .filter-btn.active, .filter-btn:hover {
   background: #6a584b;
   color: white;
@@ -234,7 +246,7 @@ body {
   gap: 10px;
 }
 
-.action-btn, .action-btn-cancel{
+.action-btn, .action-btn-cancel, .action-btn-prepared{
   width: auto;
   color: white;
   border: none;
@@ -254,6 +266,10 @@ body {
 
 .action-btn-cancel{
   background: linear-gradient(to right, #636160, #251f1f);
+}
+
+.action-btn-prepared{
+  background: linear-gradient(to right, #a2a254, #e1c614);
 }
 
 .add-btn:hover {
@@ -341,7 +357,8 @@ body {
 
 .quantity-btn{
   background-color: #cacaca;
-  width: 5%;
+  width: 7%;
+  border-radius: 5px;
   border-color: transparent;
   color: #000;
   font-size: 18px;
@@ -425,6 +442,51 @@ body {
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+}
+
+.modify-btn{
+  background: linear-gradient(to right, #11b8b5, #01ddff);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(255, 235, 107, 0.3);
+}
+
+.erase-btn{
+  background: linear-gradient(to right, #b81111, #ff4901);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(255, 235, 107, 0.3);
+}
+
+.add-btn{
+  background: linear-gradient(to right, #11b840, #4dff01);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(255, 235, 107, 0.3);
 }
 
 /* Responsive */

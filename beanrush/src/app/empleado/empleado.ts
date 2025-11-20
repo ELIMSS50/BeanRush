@@ -13,7 +13,9 @@ export class Empleado implements OnInit {
   orders: Order[] = [];
   user: any;
 
-  constructor(private ordersService: OrdersService) {}
+  constructor(
+    private ordersService: OrdersService
+  ) {}
 
   ngOnInit() {
     const userData = localStorage.getItem('currentUser');
@@ -31,6 +33,11 @@ export class Empleado implements OnInit {
 
   getItemsString(order: Order): string {
     return order.items.map((item: Product) => `${item.name} x${item.qty} ($${item.price})`).join(', ');
+  }
+
+  // MÉTODO NUEVO PARA CALCULAR EL TOTAL
+  getOrderTotal(order: Order): number {
+    return order.items.reduce((total, item) => total + (item.price * item.qty), 0);
   }
 
   getPendingOrders(): Order[] {

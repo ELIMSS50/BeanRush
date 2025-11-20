@@ -2,109 +2,110 @@
   <!-- Header -->
   <div class="header">
     <div class="brand">
-      <div class="logo"></div>
+      <div class="logo">☕</div>
       <h2>BeanRush</h2>
     </div>
     <div class="user-info">
       <span class="welcome">¡Hola, {{user?.name}}!</span>
-      <button (click)="logout()" class="logout-btn">
-        Salir
-      </button>
+      <button (click)="logout()" class="logout-btn">Salir</button>
     </div>
   </div>
 
-  <div class="admin-section">
-    <h3>Panel de Administración</h3>
-  </div>
-
-      <!-- Filtros por categoría -->
-      <div class="category-filters">
-        <button 
+  <!-- Productos -->
+  <div class="products-section">
+    <h3>Productos</h3>
+    <div class="category-filters">
+      <button 
           class="filter-btn" 
           [class.active]="selectedCategory === 'all'"
           (click)="filterProducts('all')">
           Todos
-        </button>
-        <button 
+      </button>
+      <button 
           class="filter-btn" 
           [class.active]="selectedCategory === 'bebidas'"
           (click)="filterProducts('bebidas')">
           Bebidas
-        </button>
-        <button 
+      </button>
+      <button 
           class="filter-btn" 
           [class.active]="selectedCategory === 'comida'"
           (click)="filterProducts('comida')">
           Comida
-        </button>
-        <button 
+      </button>
+      <button 
           class="filter-btn" 
           [class.active]="selectedCategory === 'postres'"
           (click)="filterProducts('postres')">
           Postres
       </button>
-      </div>
-        
-      <div class="products-grid">
-        <div *ngFor="let product of filteredProducts" class="product-card">
-          <div class="product-image">
+      <button 
+          class="addNew-btn" 
+          [class.active]="selectedCategory === 'all'"
+          (click)="filterProducts('all')">
+          Agregar nuevo producto
+    </button>
+    </div>
+
+    <div class="products-grid">
+      <div *ngFor="let product of filteredProducts" class="product-card">
+        <div class="product-image">
             <div class="image-placeholder">{{product.name.charAt(0)}}</div>
+        </div>
+        <div class="product-info">
+          <h4>{{product.name}}</h4>
+          <p>{{product.category}}</p>
+          <p><strong>{{ product.price | currency:'USD':'symbol':'1.0-0' }}</strong></p>
+          <div class="container-btn">
+            <button 
+                class="modify-btn" 
+                (click)="modifyProduct(product)">
+                 Editar
+            </button>
+            <button 
+                class="erase-btn" 
+                (click)="eraseProduct(product)">
+                Eliminar
+            </button>
           </div>
-          <div class="product-info">
-            <h4 class="product-name">{{product.name}}</h4>
-            <p class="product-category">{{product.category}}</p>
-            <div class="product-footer">
-              <span class="product-price">{{product.price | currency:'USD':'symbol':'1.0-0'}}</span>
-            </div>
-            <div class="container-btn">
-          <button class="action-btn-cancel" (click)="eraseProduct(product)" title="Eliminar">
-            Eliminar
-          </button>
-          <button (click)="modifyProduct(product, 'modify')" class="action-btn">
-            Editar
-          </button>
-        </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Filtros por categoría -->
-      <div class="category-filters">
-        <button 
-          class="filter-btn" 
-          [class.active]="selectedStatusOrder === 'all'"
-          (click)="filterOrder('all')">
-          Todos
-        </button>
-        <button 
-          class="filter-btn" 
-          [class.active]="selectedStatusOrder === 'pending'"
-          (click)="filterOrder('pending')">
-          Nuevas órdenes
-        </button>
-        <button 
-          class="filter-btn" 
-          [class.active]="selectedStatusOrder === 'preparing'"
-          (click)="filterOrder('preparing')">
-          En preparación
-        </button>
-      </div>
-
-      <div class="cart-section">
-        <div *ngFor="let order of filteredOrder" class="cart-item">
-        <div class="container-order">
-          <h4>#{{order.number}} - {{order.table}}</h4>
-          <p>{{order.items}}</p>
-          <p><strong>{{order.total | currency:'USD':'symbol':'1.0-0'}}</strong></p>
-        </div>
-        <div class="container-btn">
-          <button (click)="cancelOrder(order, 'cancel')" class="action-btn-cancel">
-            ❌ Cancelar
-          </button>
-          <button (click)="changeOrderStatus(order, 'preparing')" class="action-btn">
-            ✅ Preparar
-          </button>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Órdenes Pendientes -->
+  <div class="cart-section">
+    <h3>🆕 Órdenes Pendientes</h3>
+    <div *ngFor="let order of getPendingOrders()" class="cart-item">
+      <h4>#{{order.id}} - {{order.table}}</h4>
+      <p>{{ getItemsString(order) }}</p>
+      <p><strong>{{ getOrderTotal(order) | currency:'USD':'symbol':'1.0-0' }}</strong></p>
+      <div class="container-btn">
+        <button (click)="changeOrderStatus(order, 'canceled')" class="action-btn-cancel">
+          Cancelar
+        </button>
+        <button (click)="changeOrderStatus(order, 'preparing')" class="action-btn-prepared">
+          Preparar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Órdenes en Preparación -->
+  <div class="cart-section">
+    <h3>🧑‍🍳 Órdenes en Preparación</h3>
+    <div *ngFor="let order of getPreparingOrders()" class="cart-item">
+      <h4>#{{order.id}} - {{order.table}}</h4>
+      <p>{{ getItemsString(order) }}</p>
+      <p><strong>{{ getOrderTotal(order) | currency:'USD':'symbol':'1.0-0' }}</strong></p>
+      <div class="container-btn">
+        <button (click)="changeOrderStatus(order, 'canceled')" class="action-btn-cancel">
+          Cancelar
+        </button>
+        <button (click)="changeOrderStatus(order, 'completed')" class="action-btn">
+          Listo
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

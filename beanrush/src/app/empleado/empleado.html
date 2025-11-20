@@ -23,9 +23,9 @@
       <div class="container-order">
         <h4>#{{order.id}} - {{order.table}}</h4>
         <p>{{ getItemsString(order) }}</p>
-  <p><strong>{{order.total | currency:'USD':'symbol':'1.0-0'}}</strong></p>
+        <p><strong>{{ getOrderTotal(order) | currency:'USD':'symbol':'1.0-0' }}</strong></p>
       </div>
-      <button (click)="changeOrderStatus(order, 'preparing')" class="action-btn">
+      <button (click)="changeOrderStatus(order, 'preparing')" class="action-btn-prepared">
         Preparar
       </button>
     </div>
@@ -37,8 +37,9 @@
     <div *ngFor="let order of getPreparingOrders()" class="cart-item">
       <h4>#{{order.id}} - {{order.table}}</h4>
       <p>{{ getItemsString(order) }}</p>
+      <p><strong>{{ getOrderTotal(order) | currency:'USD':'symbol':'1.0-0' }}</strong></p>
       <button (click)="changeOrderStatus(order, 'completed')" class="action-btn ready">
-        ✅ Listo
+        Listo
       </button>
     </div>
   </div>
