@@ -153,6 +153,9 @@
         <button (click)="changeOrderStatus(order, 'canceled')" class="action-btn-cancel">
           Cancelar
         </button>
+        <button (click)="openEditOrderModal(order)" class="modify-btn">
+          Editar
+        </button>
         <button (click)="changeOrderStatus(order, 'preparing')" class="action-btn-prepared">
           Preparar
         </button>
@@ -174,6 +177,87 @@
         <button (click)="changeOrderStatus(order, 'completed')" class="action-btn">
           Listo
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para editar orden -->
+  <div *ngIf="showEditOrderModal && editingOrder" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Editar Orden #{{editingOrder.id}}</h3>
+        <button class="close-btn" (click)="closeEditOrderModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="updateOrder()" #orderForm="ngForm">
+          
+          <div class="form-group">
+            <label for="orderTable">Mesa:</label>
+            <input 
+              type="text" 
+              id="orderTable" 
+              name="orderTable" 
+              [(ngModel)]="editingOrder.table" 
+              required 
+              class="form-input"
+              placeholder="Ej: Mesa 1">
+          </div>
+
+          <div class="form-group">
+            <label for="orderStatus">Estado:</label>
+            <select 
+              id="orderStatus" 
+              name="orderStatus" 
+              [(ngModel)]="editingOrder.status" 
+              required 
+              class="form-input">
+              <option value="pending">Pendiente</option>
+              <option value="preparing">En Preparación</option>
+              <option value="completed">Completada</option>
+              <option value="canceled">Cancelada</option>
+            </select>
+          </div>
+
+          <div class="items-section">
+            <h4>Items de la Orden:</h4>
+            <!-- Agrega *ngIf para verificar que editingOrder.items existe -->
+            <div *ngIf="editingOrder.items && editingOrder.items.length > 0; else noItems">
+              <div *ngFor="let item of editingOrder.items; let i = index" class="order-item">
+                <div class="item-info">
+                  <strong>{{item.name}}</strong>
+                  <span>${{item.price}} c/u</span>
+                </div>
+                <div class="item-controls">
+                  <button type="button" class="quantity-btn" (click)="decreaseItemQuantity(i)">-</button>
+                  <span class="quantity"> {{item.qty}} </span>
+                  <button type="button" class="quantity-btn" (click)="increaseItemQuantity(i)">+</button>
+                  <button type="button" class="quantity-btn-remove" (click)="removeItemFromOrder(i)">×</button>
+                </div>
+              </div>
+            </div>
+            <ng-template #noItems>
+              <p class="no-items-message">No hay items en esta orden.</p>
+            </ng-template>
+          </div>
+
+          <div class="order-total">
+            <strong>Total: {{ getEditingOrderTotal() | currency:'USD':'symbol':'1.0-0' }}</strong>
+          </div>
+
+          <div class="modal-actions">
+            <button 
+              type="button" 
+              class="btn-cancel" 
+              (click)="closeEditOrderModal()">
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="action-btn">
+              Actualizar Orden
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

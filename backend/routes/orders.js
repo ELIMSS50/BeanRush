@@ -2,29 +2,45 @@ const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
 
-// GET todas las órdenes
-router.get('/', async (req, res) => {
+// PUT - Actualizar orden completa
+router.put('/:id', async (req, res) => {
   try {
-    const orders = await Order.find();
-    res.json(orders);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const { id } = req.params;
+    const updatedOrder = await Order.findOneAndUpdate(
+      { id: parseInt(id) },
+      req.body,
+      { new: true, runValidators: true }
+    );
+    
+    if (!updatedOrder) {
+      return res.status(404).json({ error: 'Orden no encontrada' });
+    }
+    
+    res.json(updatedOrder);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
-// PUT actualizar status de una orden
-router.put('/:id', async (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
+// PATCH - Actualizar solo el estado
+router.patch('/:id/status', async (req, res) => {
   try {
-    const order = await Order.findOneAndUpdate(
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    const updatedOrder = await Order.findOneAndUpdate(
       { id: parseInt(id) },
       { status },
       { new: true }
     );
-    res.json(order);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    
+    if (!updatedOrder) {
+      return res.status(404).json({ error: 'Orden no encontrada' });
+    }
+    
+    res.json(updatedOrder);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 

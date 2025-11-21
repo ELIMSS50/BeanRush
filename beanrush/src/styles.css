@@ -269,7 +269,7 @@ body {
 }
 
 .action-btn-prepared{
-  background: linear-gradient(to right, #a2a254, #e1c614);
+  background: linear-gradient(to right, #ca9229, #e17714);
 }
 
 .add-btn:hover {
@@ -355,7 +355,7 @@ body {
   justify-content: space-between;
 }
 
-.quantity-btn{
+.quantity-btn, .quantity-btn-remove{
   background-color: #cacaca;
   width: 7%;
   border-radius: 5px;
@@ -365,9 +365,16 @@ body {
 
 }
 
+.quantity-btn-remove{
+  margin-left: 10px;
+  background-color: #ff0000;
+}
+
 .quantity{
   font-size: 18px;
   width: 35%;
+  margin-left: 5px;
+  margin-right: 5px;
 }
 
 .remove-btn {
@@ -445,7 +452,7 @@ body {
 }
 
 .modify-btn{
-  background: linear-gradient(to right, #11b8b5, #01ddff);
+  background: linear-gradient(to right, #1194b8, #056a79);
   color: white;
   border: none;
   padding: 10px 18px;

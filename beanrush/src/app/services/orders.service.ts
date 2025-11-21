@@ -7,15 +7,28 @@ import { Order } from '../models/order.model';
   providedIn: 'root'
 })
 export class OrdersService {
-  private baseUrl = 'http://localhost:4000/api/orders';
+  private apiUrl = 'http://localhost:4000/api/orders';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getOrders(): Observable<Order[]> {
-    return this.http.get<Order[]>(this.baseUrl);
+    return this.http.get<Order[]>(this.apiUrl);
   }
 
-  updateOrderStatus(id: number, status: string): Observable<Order> {
-    return this.http.put<Order>(`${this.baseUrl}/${id}`, { status });
+  updateOrderStatus(orderId: number, status: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/${orderId}/status`, { status });
+  }
+
+  updateOrder(order: Order): Observable<Order> {
+    return this.http.put<Order>(`${this.apiUrl}/${order.id}`, order);
+  }
+
+  createOrder(order: Order): Observable<Order> {
+    return this.http.post<Order>(this.apiUrl, order);
+  }
+
+  // Método para eliminar orden - AGREGAR ESTE MÉTODO
+  deleteOrder(orderId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${orderId}`);
   }
 }
