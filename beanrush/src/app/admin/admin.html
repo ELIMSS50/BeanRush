@@ -42,10 +42,79 @@
       <button 
           class="addNew-btn" 
           [class.active]="selectedCategory === 'all'"
-          (click)="filterProducts('all')">
+          (click)="openAddProductModal()">
           Agregar nuevo producto
     </button>
     </div>
+
+  <!-- Ventana emergente para agregar un nuevo producto-->
+  <div *ngIf="showAddProductModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Agregar Nuevo Producto</h3>
+        <button class="close-btn" (click)="closeAddProductModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="addNewProduct()" #productForm="ngForm">
+          <div class="form-group">
+            <label for="productName">Nombre del Producto:</label>
+            <input 
+              type="text" 
+              id="productName" 
+              name="productName" 
+              [(ngModel)]="newProduct.name" 
+              required 
+              class="form-input"
+              placeholder="Ej: Café Espresso">
+          </div>
+
+          <div class="form-group">
+            <label for="productPrice">Precio:</label>
+            <input 
+              type="number" 
+              id="productPrice" 
+              name="productPrice" 
+              [(ngModel)]="newProduct.price" 
+              required 
+              min="0"
+              step="0.50"
+              class="form-input"
+              placeholder="Ej: 55.00">
+          </div>
+
+          <div class="form-group">
+            <label for="productCategory">Categoría:</label>
+            <select 
+              id="productCategory" 
+              name="productCategory" 
+              [(ngModel)]="newProduct.category" 
+              required 
+              class="form-input">
+              <option value="">Selecciona una categoría</option>
+              <option value="bebidas">Bebidas</option>
+              <option value="comida">Comida</option>
+              <option value="postres">Postres</option>
+            </select>
+          </div>
+
+          <div class="modal-actions">
+            <button 
+              type="button" 
+              class="btn-cancel" 
+              (click)="closeAddProductModal()">
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="action-btn"
+              [disabled]="!productForm.form.valid">
+              Agregar Producto
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
     <div class="products-grid">
       <div *ngFor="let product of filteredProducts" class="product-card">

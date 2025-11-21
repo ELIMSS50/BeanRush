@@ -14,4 +14,5 @@ export interface Order {
   table: string;
   items: Product[];
   status: OrderStatus;
+  qty?: number;
 }
