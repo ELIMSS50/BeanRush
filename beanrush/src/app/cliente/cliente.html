@@ -114,98 +114,98 @@
   </div>
 </div>
 
-<!-- Modal para seleccionar mesa/cliente -->
-<div *ngIf="showCustomerModal" class="modal-overlay">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Información del Pedido</h3>
-      <button class="close-btn" (click)="closeCustomerModal()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="customer-type-selector">
-        <h4>Selecciona el tipo de pedido:</h4>
-        <div class="type-options">
-          <label class="type-option">
-            <input 
-              type="radio" 
-              name="customerType" 
-              value="table" 
-              [(ngModel)]="customerInfo.type">
-            <span class="radio-label">
-              <span class="option-icon">🍽️</span>
-              <span class="option-text">
-                <strong>Para mesa</strong>
-                <small>Servicio en restaurante</small>
-              </span>
-            </span>
-          </label>
-          
-          <label class="type-option">
-            <input 
-              type="radio" 
-              name="customerType" 
-              value="name" 
-              [(ngModel)]="customerInfo.type">
-            <span class="radio-label">
-              <span class="option-icon">👤</span>
-              <span class="option-text">
-                <strong>Para llevar</strong>
-                <small>Recoger en mostrador</small>
-              </span>
-            </span>
-          </label>
-        </div>
+  <!-- Modal para seleccionar mesa/cliente para el pedido -->
+  <div *ngIf="showCustomerModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Información del Pedido</h3>
+        <button class="close-btn" (click)="closeCustomerModal()">×</button>
       </div>
-
-      <div class="customer-details">
-        <!-- Campo para número de mesa -->
-        <div *ngIf="customerInfo.type === 'table'" class="form-group">
-          <label for="tableNumber">Número de Mesa:</label>
-          <input 
-            type="text" 
-            id="tableNumber" 
-            [(ngModel)]="customerInfo.tableNumber"
-            class="form-input"
-            placeholder="Ej: 1, 2, 3..."
-            maxlength="10">
-          <small class="input-help">Ingresa el número de tu mesa</small>
-        </div>
-
-        <!-- Campo para nombre del cliente -->
-        <div *ngIf="customerInfo.type === 'name'" class="form-group">
-          <label for="customerName">Nombre para el pedido:</label>
-          <input 
-            type="text" 
-            id="customerName" 
-            [(ngModel)]="customerInfo.customerName"
-            class="form-input"
-            placeholder="Ej: Juan Pérez"
-            maxlength="50">
-          <small class="input-help">Ingresa tu nombre para identificar el pedido</small>
-        </div>
-      </div>
-
-      <div class="order-summary-preview">
-        <h4>Resumen del Pedido:</h4>
-        <div class="preview-items">
-          <div *ngFor="let item of cart" class="preview-item">
-            <span>{{item.name}} x{{item.quantity}}</span>
-            <span>{{(item.price * item.quantity) | currency:'USD':'symbol':'1.0-0'}}</span>
+      <div class="modal-body">
+        <div class="customer-type-selector">
+          <h4>Selecciona el tipo de pedido:</h4>
+          <div class="type-options">
+            <label class="type-option">
+              <input 
+                type="radio" 
+                name="customerType" 
+                value="table" 
+                [(ngModel)]="customerInfo.type">
+              <span class="radio-label">
+                <span class="option-icon">🍽️</span>
+                <span class="option-text">
+                  <strong>Para mesa</strong>
+                  <small>Servicio en restaurante</small>
+                </span>
+              </span>
+            </label>
+            
+            <label class="type-option">
+              <input 
+                type="radio" 
+                name="customerType" 
+                value="name" 
+                [(ngModel)]="customerInfo.type">
+              <span class="radio-label">
+                <span class="option-icon">👤</span>
+                <span class="option-text">
+                  <strong>Para llevar</strong>
+                  <small>Recoger en mostrador</small>
+                </span>
+              </span>
+            </label>
           </div>
         </div>
-        <div class="preview-total">
-          <strong>Total: {{ total | currency:'USD':'symbol':'1.0-0' }}</strong>
+
+        <div class="customer-details">
+          <!-- Campo para número de mesa -->
+          <div *ngIf="customerInfo.type === 'table'" class="form-group">
+            <label for="tableNumber">Número de Mesa:</label>
+            <input 
+              type="text" 
+              id="tableNumber" 
+              [(ngModel)]="customerInfo.tableNumber"
+              class="form-input"
+              placeholder="Ej: 1, 2, 3..."
+              maxlength="10">
+            <small class="input-help">Ingresa el número de tu mesa</small>
+          </div>
+
+          <!-- Campo para nombre del cliente -->
+          <div *ngIf="customerInfo.type === 'name'" class="form-group">
+            <label for="customerName">Nombre para el pedido:</label>
+            <input 
+              type="text" 
+              id="customerName" 
+              [(ngModel)]="customerInfo.customerName"
+              class="form-input"
+              placeholder="Ej: Juan Pérez"
+              maxlength="50">
+            <small class="input-help">Ingresa tu nombre para identificar el pedido</small>
+          </div>
+        </div>
+
+        <div class="order-summary-preview">
+          <h4>Resumen del Pedido:</h4>
+          <div class="preview-items">
+            <div *ngFor="let item of cart" class="preview-item">
+              <span>{{item.name}} x{{item.quantity}}</span>
+              <span>{{(item.price * item.quantity) | currency:'USD':'symbol':'1.0-0'}}</span>
+            </div>
+          </div>
+          <div class="preview-total">
+            <strong>Total: {{ total | currency:'USD':'symbol':'1.0-0' }}</strong>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="closeCustomerModal()">
+            Cancelar
+          </button>
+          <button type="button" class="btn-confirm" (click)="confirmCustomerInfo()">
+            Continuar al Pago
+          </button>
         </div>
       </div>
-
-      <div class="modal-actions">
-        <button type="button" class="btn-cancel" (click)="closeCustomerModal()">
-          Cancelar
-        </button>
-        <button type="button" class="btn-confirm" (click)="confirmCustomerInfo()">
-          Continuar al Pago
-        </button>
-      </div>
     </div>
-  </div>
 </div>
