@@ -1,38 +1,78 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { UsersService } from '../services/users.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.html',
-  styleUrls: ['./login.css']
+  styleUrls: ['./login.css'],
+  standalone: true,
+  imports: [CommonModule, FormsModule]
 })
 export class Login {
-  email: string = '';
-  password: string = '';
+  credentials = {
+    email: '',
+    password: ''
+  };
 
-  // Usuarios de prueba
-  private testUsers = [
-    { email: 'cliente@.com', password: '123456', role: 'customer', name: 'Juan Cliente' },
-    { email: 'empleado@.com', password: '123456', role: 'employee', name: 'Pedro Empleado' },
-    { email: 'admin@.com', password: '123456', role: 'admin', name: 'Ana Admin' }
-  ];
+  error = '';
+  isLoading = false;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private usersService: UsersService
+  ) {}
 
   login() {
-    const user = this.testUsers.find(u => 
-      u.email === this.email && u.password === this.password
-    );
+    if (this.validateForm()) {
+      this.isLoading = true;
+      this.error = '';
 
-    if (user) {
-      // Guardar en localStorage
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      
-      // Redirigir según rol
-      this.redirectByRole(user.role);
-    } else {
-      alert('Credenciales incorrectas');
+      console.log('Intentando login con:', this.credentials);
+
+      this.usersService.login(this.credentials).subscribe({
+        next: (user) => {
+          console.log('Login exitoso:', user);
+          
+          // Guardar en localStorage
+          localStorage.setItem('currentUser', JSON.stringify(user));
+          this.isLoading = false;
+          
+          // Redirigir según el rol
+          this.redirectByRole(user.role);
+        },
+        error: (error) => {
+          console.error('Error en login:', error);
+          
+          if (error.status === 0) {
+            this.error = 'Error de conexión. Verifica que el servidor esté funcionando.';
+          } else if (error.status === 400) {
+            this.error = error.error?.error || 'Credenciales incorrectas';
+          } else {
+            this.error = error.error?.error || 'Error al iniciar sesión';
+          }
+          
+          this.isLoading = false;
+        }
+      });
     }
+  }
+
+  validateForm(): boolean {
+    if (!this.credentials.email || !this.credentials.password) {
+      this.error = 'Todos los campos son obligatorios';
+      return false;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.credentials.email)) {
+      this.error = 'El correo no es válido';
+      return false;
+    }
+    
+    return true;
   }
 
   private redirectByRole(role: string) {
@@ -43,13 +83,15 @@ export class Login {
       case 'employee':
         this.router.navigate(['/employee']);
         break;
+      case 'customer':
+        this.router.navigate(['/customer']);
+        break;
       default:
         this.router.navigate(['/customer']);
     }
   }
 
   newAccount() {
-    localStorage.removeItem('currentUser');
-    window.location.href='/registro';
+    this.router.navigate(['/registro']);
   }
 }

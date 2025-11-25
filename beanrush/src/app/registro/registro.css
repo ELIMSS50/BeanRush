@@ -19,14 +19,17 @@
 .register-card h2 {
   text-align: center;
   margin-bottom: 5px;
-  color: #333;
+  font-size: 22px;
+  font-weight: 800;
+  color: #423124;
 }
 
 .register-card h3 {
   text-align: center;
+  font-size: 18px;
+  font-weight: 700;
   margin-bottom: 25px;
-  color: #666;
-  font-weight: normal;
+  color: #6a584b;
 }
 
 .register-form {
@@ -83,7 +86,7 @@
 .register-btn {
   width: 100%;
   padding: 12px;
-  background: #8B4513;
+  background: #423124;
   color: white;
   border: none;
   border-radius: 5px;
@@ -93,7 +96,7 @@
 }
 
 .register-btn:hover:not(:disabled) {
-  background: #A0522D;
+  background: #342a22;
 }
 
 .register-btn:disabled {
@@ -108,14 +111,14 @@
 }
 
 .link {
-  color: #8B4513;
+  color: #423124;
   cursor: pointer;
   text-decoration: underline;
   margin-left: 5px;
 }
 
 .link:hover {
-  color: #A0522D;
+  color: #342a22;
 }
 
 .test-users {
@@ -130,4 +133,34 @@
 .test-users h4 {
   margin: 0 0 10px 0;
   color: #495057;
+}
+
+.general-error {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  border: 1px solid #f5c6cb;
+  text-align: center;
+  font-weight: bold;
+}
+
+.input-hint {
+  color: #666;
+  font-size: 0.8em;
+  margin-top: 5px;
+  display: block;
+}
+
+.form-input.error {
+  border-color: #dc3545;
+  background-color: #f8f9fa;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.8em;
+  margin-top: 5px;
+  display: block;
 }

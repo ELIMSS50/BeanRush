@@ -3,6 +3,11 @@
     <h2>BeanRush</h2>
     <h3>Crear Cuenta</h3>
     
+    <!-- Mensaje de error general -->
+    <div *ngIf="generalError" class="error-message general-error" role="alert">
+      {{ generalError }}
+    </div>
+    
     <form (ngSubmit)="onRegister()" class="register-form">
       <!-- Nombre -->
       <div class="form-group">
@@ -26,7 +31,7 @@
         <input 
           id="email"
           type="email" 
-          placeholder="Correo electrónico"
+          placeholder="Correo electrónico (ej: usuario@cliente.com)"
           [(ngModel)]="user.email"
           name="email"
           class="form-input"
@@ -34,6 +39,9 @@
           aria-describedby="email-error"
           required>
         <div id="email-error" class="error-message" *ngIf="errors.email" role="alert">{{ errors.email }}</div>
+        <small class="input-hint">
+          Debe terminar en @cliente.com, @empleado.com o @admin.com
+        </small>
       </div>
       
       <!-- Contraseña -->
@@ -42,7 +50,7 @@
         <input 
           id="password"
           type="password" 
-          placeholder="Contraseña"
+          placeholder="Contraseña (mínimo 6 caracteres)"
           [(ngModel)]="user.password"
           name="password"
           class="form-input"
@@ -71,7 +79,7 @@
         </div>
       </div>
       
-  <!-- Botón Registrar -->
+      <!-- Botón Registrar -->
       <button 
         type="submit" 
         class="register-btn"

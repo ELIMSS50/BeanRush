@@ -15,6 +15,18 @@
   text-align: center;
 }
 
+.login-card h2{
+  color: #423124;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.login-card h3{
+  color: #6a584b;
+  font-size: 18px;
+  font-weight: 700;
+}
+
 .form-input {
   width: 100%;
   padding: 10px;
@@ -42,7 +54,7 @@
   background-color: transparent;
   color: #423124;
   text-align: end;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .login-btn:hover {
