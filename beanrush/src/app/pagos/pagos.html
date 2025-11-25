@@ -1,73 +1,117 @@
 <div class="simulator-container">
   <div class="simulator-header">
-    <h1> SIMULADOR DE PAGO</h1>
-    <div class="order-info">
-      Orden: #{{ currentOrder.number }} - Total: ${{ currentOrder.total }}
+    <div class="brand">
+      <div class="logo">☕</div>
+      <h1>BeanRush - Procesar Pago</h1>
     </div>
+    <button class="cancel-btn" (click)="cancelPayment()">Cancelar</button>
   </div>
 
   <div class="simulator-body">
+    <!-- Resumen del Pedido -->
+    <div class="order-summary">
+      <h3>RESUMEN DE TU PEDIDO</h3>
+      <div class="order-details">
+        <div class="order-number">Orden: {{ currentOrder.number }}</div>
+        <div class="order-total">Total: {{ currentOrder.total | currency:'USD':'symbol':'1.0-0' }}</div>
+      </div>
+      <div class="order-items">
+        <div *ngFor="let item of currentOrder.items" class="order-item">
+          <span class="item-name">{{ item.name }} x{{ item.quantity }}</span>
+          <span class="item-subtotal">{{ (item.price * item.quantity) | currency:'USD':'symbol':'1.0-0' }}</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Métodos de Pago -->
     <div class="payment-methods">
-      <h3>MÉTODO DE PAGO</h3>
+      <h3>SELECCIONA MÉTODO DE PAGO</h3>
       <div class="methods-grid">
-  <button *ngFor="let method of paymentMethods"
-    [class.selected]="selectedMethod === method"
-    (click)="selectMethod(method)"
-    [attr.aria-pressed]="selectedMethod === method"
-    class="method-btn">
-    {{ method }}
-  </button>
+        <button *ngFor="let method of paymentMethods"
+          [class.selected]="selectedMethod === method"
+          (click)="selectMethod(method)"
+          [disabled]="isProcessing"
+          class="method-btn">
+          <span class="method-icon">
+            {{ method === 'EFECTIVO' ? '💵' : method === 'TARJETA' ? '💳' : '📱' }}
+          </span>
+          {{ method }}
+        </button>
       </div>
     </div>
 
     <!-- Campos específicos por método -->
-    <div class="payment-details" *ngIf="selectedMethod === 'EFECTIVO'">
+    <div class="payment-details" *ngIf="selectedMethod === 'EFECTIVO' && !isProcessing">
       <div class="input-group">
         <label>Efectivo recibido:</label>
-   <input type="number" 
-     [(ngModel)]="cashReceived"
-     (ngModelChange)="cashReceived = +$event; calculateChange()"
-     (input)="calculateChange()"
-     min="0"
-     placeholder="0">
+        <div class="input-with-currency">
+          <span class="currency-symbol">$</span>
+          <input type="number" 
+            [(ngModel)]="cashReceived"
+            (ngModelChange)="calculateChange()"
+            min="0"
+            step="1.0"
+            placeholder="0.00"
+            [class.insufficient]="cashReceived < currentOrder.total">
+        </div>
       </div>
       <div class="change-display" *ngIf="change >= 0">
-        Cambio: <span class="change-amount">{{ change | currency:'USD':'symbol':'1.0-0' }}</span>
+        <span class="change-label">Cambio:</span>
+        <span class="change-amount">{{ change | currency:'USD':'symbol':'1.0-0' }}</span>
+      </div>
+      <div class="insufficient-warning" *ngIf="cashReceived > 0 && cashReceived < currentOrder.total">
+        ⚠️ Efectivo insuficiente. Faltan {{ (currentOrder.total - cashReceived) | currency:'USD':'symbol':'1.0-0' }}
       </div>
     </div>
 
-    <!-- Botones de Acción -->
+    <!-- Botón de Pago Principal -->
     <div class="action-buttons">
       <button (click)="processPayment()" 
-              class="btn-process"
-              [disabled]="selectedMethod === 'EFECTIVO' && cashReceived < currentOrder.total">
-        PROCESAR PAGO
+        class="btn-process"
+        [disabled]="isProcessing || (selectedMethod === 'EFECTIVO' && cashReceived < currentOrder.total)"
+        [class.processing]="isProcessing">
+        <span *ngIf="!isProcessing">🎯 PROCESAR PAGO</span>
+        <span *ngIf="isProcessing" class="processing-spinner">⏳ Procesando...</span>
       </button>
 
-      <div class="simulation-buttons">
+      <!-- Simuladores (solo para desarrollo) -->
+      <!--<div class="simulation-buttons" *ngIf="!isProcessing">
         <button (click)="simulatePaymentSuccess()" class="btn-success">
-          PAGO EXITOSO
+          ✅ PAGO EXITOSO
         </button>
         <button (click)="simulatePaymentFailure()" class="btn-failure">
-          PAGO RECHAZADO
+          ❌ PAGO RECHAZADO
         </button>
       </div>
-    </div>
+    </div>-->
 
     <!-- Estado del Pago -->
-    <div class="payment-status" [class]="paymentStatus.toLowerCase().includes('exitoso') ? 'status-success' : 
-                                         paymentStatus.toLowerCase().includes('rechazado') ? 'status-failure' : 'status-processing'"
-         role="status" aria-live="polite">
-      {{ paymentStatus || 'ESPERANDO PAGO...' }}
+    <div class="payment-status" 
+      [class]="{
+        'status-success': paymentStatus.includes('EXITOSO'),
+        'status-failure': paymentStatus.includes('RECHAZADO') || paymentStatus.includes('ERROR'),
+        'status-processing': paymentStatus.includes('PROCESANDO')
+      }">
+      <div class="status-icon">
+        {{ paymentStatus.includes('EXITOSO') ? '✅' : 
+           paymentStatus.includes('RECHAZADO') ? '❌' : 
+           paymentStatus.includes('ERROR') ? '⚠️' : '⏳' }}
+      </div>
+      {{ paymentStatus || 'SELECCIONA MÉTODO DE PAGO' }}
     </div>
 
-    <!-- Logs -->
+    <!-- Logs de Transacciones -->
     <div class="payment-logs">
-      <h3>REGISTRO DE TRANSACCIONES</h3>
-      <div class="logs-container" role="log" aria-live="polite">
-        <div *ngFor="let log of paymentLogs" class="log-entry">
+      <h3>HISTORIAL DE TRANSACCIONES</h3>
+      <div class="logs-container">
+        <div *ngFor="let log of paymentLogs" 
+          class="log-entry"
+          [class.success]="log.includes('✅')"
+          [class.error]="log.includes('❌') || log.includes('ERROR')">
           {{ log }}
+        </div>
+        <div *ngIf="paymentLogs.length === 0" class="no-logs">
+          No hay transacciones registradas
         </div>
       </div>
     </div>

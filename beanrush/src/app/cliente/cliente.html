@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="header">
     <div class="brand">
-      <div class="logo"></div>
+      <div class="logo">☕</div>
       <h2>BeanRush</h2>
     </div>
     <div class="user-info">
@@ -59,7 +59,7 @@
             <h4 class="product-name">{{product.name}}</h4>
             <p class="product-category">{{product.category}}</p>
             <div class="product-footer">
-                  <span class="product-price">{{product.price | currency:'USD':'symbol':'1.0-0'}}</span>
+              <span class="product-price">{{product.price | currency:'USD':'symbol':'1.0-0'}}</span>
               <button (click)="addToCart(product)" class="action-btn">
                 <span class="add-icon">+</span>
                 Agregar
@@ -89,7 +89,7 @@
             <span class="item-name">{{item.name}}</span>
             <div class="item-price">{{item.price | currency:'USD':'symbol':'1.0-0'}} c/u</div>
             <div class="quantity-controls">
-              <button class="quantity-btn" (click)="decreaseQuantity(i)"[disabled]="item.quantity === 1">−</button>
+              <button class="quantity-btn" (click)="decreaseQuantity(i)" [disabled]="item.quantity === 1">−</button>
               <span class="quantity"> {{item.quantity}} </span>
               <button class="quantity-btn" (click)="increaseQuantity(i)">+</button>
             </div>
@@ -102,12 +102,108 @@
       </div>
       
       <div class="cart-footer">
-          <div class="total-section">
+        <div class="total-section">
           <span class="total-label">Total:</span>
           <span class="total-amount">{{ total | currency:'USD':'symbol':'1.0-0' }}</span>
         </div>
-        <button class="order-btn" (click)="hacerPago()" [disabled]="cart.length === 0">
+        <button class="order-btn" (click)="openCustomerModal()" [disabled]="cart.length === 0">
           Hacer pedido
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para seleccionar mesa/cliente -->
+<div *ngIf="showCustomerModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Información del Pedido</h3>
+      <button class="close-btn" (click)="closeCustomerModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="customer-type-selector">
+        <h4>Selecciona el tipo de pedido:</h4>
+        <div class="type-options">
+          <label class="type-option">
+            <input 
+              type="radio" 
+              name="customerType" 
+              value="table" 
+              [(ngModel)]="customerInfo.type">
+            <span class="radio-label">
+              <span class="option-icon">🍽️</span>
+              <span class="option-text">
+                <strong>Para mesa</strong>
+                <small>Servicio en restaurante</small>
+              </span>
+            </span>
+          </label>
+          
+          <label class="type-option">
+            <input 
+              type="radio" 
+              name="customerType" 
+              value="name" 
+              [(ngModel)]="customerInfo.type">
+            <span class="radio-label">
+              <span class="option-icon">👤</span>
+              <span class="option-text">
+                <strong>Para llevar</strong>
+                <small>Recoger en mostrador</small>
+              </span>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="customer-details">
+        <!-- Campo para número de mesa -->
+        <div *ngIf="customerInfo.type === 'table'" class="form-group">
+          <label for="tableNumber">Número de Mesa:</label>
+          <input 
+            type="text" 
+            id="tableNumber" 
+            [(ngModel)]="customerInfo.tableNumber"
+            class="form-input"
+            placeholder="Ej: 1, 2, 3..."
+            maxlength="10">
+          <small class="input-help">Ingresa el número de tu mesa</small>
+        </div>
+
+        <!-- Campo para nombre del cliente -->
+        <div *ngIf="customerInfo.type === 'name'" class="form-group">
+          <label for="customerName">Nombre para el pedido:</label>
+          <input 
+            type="text" 
+            id="customerName" 
+            [(ngModel)]="customerInfo.customerName"
+            class="form-input"
+            placeholder="Ej: Juan Pérez"
+            maxlength="50">
+          <small class="input-help">Ingresa tu nombre para identificar el pedido</small>
+        </div>
+      </div>
+
+      <div class="order-summary-preview">
+        <h4>Resumen del Pedido:</h4>
+        <div class="preview-items">
+          <div *ngFor="let item of cart" class="preview-item">
+            <span>{{item.name}} x{{item.quantity}}</span>
+            <span>{{(item.price * item.quantity) | currency:'USD':'symbol':'1.0-0'}}</span>
+          </div>
+        </div>
+        <div class="preview-total">
+          <strong>Total: {{ total | currency:'USD':'symbol':'1.0-0' }}</strong>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="closeCustomerModal()">
+          Cancelar
+        </button>
+        <button type="button" class="btn-confirm" (click)="confirmCustomerInfo()">
+          Continuar al Pago
         </button>
       </div>
     </div>
