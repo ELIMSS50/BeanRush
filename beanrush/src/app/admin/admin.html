@@ -145,6 +145,9 @@
   <!-- Órdenes Pendientes -->
   <div class="cart-section">
     <h3>🆕 Órdenes Pendientes</h3>
+    <button class="addNew-btn" (click)="openCreateOrderModal()">
+      Agregar nueva orden
+    </button>
     <div *ngFor="let order of getPendingOrders()" class="cart-item">
       <h4>#{{order.id}} - {{order.table}}</h4>
       <p>{{ getItemsString(order) }}</p>
@@ -159,6 +162,91 @@
         <button (click)="changeOrderStatus(order, 'preparing')" class="action-btn-prepared">
           Preparar
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para crear nueva orden -->
+  <div *ngIf="showCreateOrderModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Crear Nueva Orden</h3>
+        <button class="close-btn" (click)="closeCreateOrderModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="createNewOrder()" #newOrderForm="ngForm">
+          
+          <div class="form-group">
+            <label for="newOrderTable">Mesa:</label>
+            <input 
+              type="text" 
+              id="newOrderTable" 
+              name="newOrderTable" 
+              [(ngModel)]="newOrder.table" 
+              required 
+              class="form-input"
+              placeholder="Ej: Mesa 1">
+          </div>
+
+          <div class="items-section">
+            <h4>Agregar Productos:</h4>
+            <div class="add-products">
+              <div class="product-selector">
+                <select 
+                  [(ngModel)]="selectedProductId" 
+                  name="selectedProduct"
+                  class="form-input"
+                  (change)="onProductSelect()">
+                  <option value="">Selecciona un producto</option>
+                  <option *ngFor="let product of products" [value]="product.id">
+                    {{product.name}} - {{product.price | currency:'USD':'symbol':'1.0-0'}}
+                  </option>
+                </select>
+                <button type="button" class="btn-clear" (click)="clearProductSelection()">
+                  Limpiar
+                </button>
+              </div>
+              
+              <div *ngIf="newOrder.items.length > 0" class="selected-items">
+                <h5>Productos en la orden:</h5>
+                <div *ngFor="let item of newOrder.items; let i = index" class="order-item">
+                  <div class="item-info">
+                    <strong>{{item.name}}</strong>
+                    <span>{{item.price | currency:'USD':'symbol':'1.0-0'}} c/u</span>
+                  </div>
+                  <div class="item-controls">
+                    <button type="button" class="quantity-btn" (click)="decreaseNewItemQuantity(i)">-</button>
+                    <span class="quantity"> {{item.qty}} </span>
+                    <button type="button" class="quantity-btn" (click)="increaseNewItemQuantity(i)">+</button>
+                    <button type="button" class="quantity-btn-remove" (click)="removeItemFromNewOrder(i)">×</button>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="newOrder.items.length === 0" class="no-items">
+                <p>No hay productos en la orden. Selecciona productos arriba.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="order-total">
+            <strong>Total: {{ getNewOrderTotal() | currency:'USD':'symbol':'1.0-0' }}</strong>
+          </div>
+
+          <div class="modal-actions">
+            <button 
+              type="button" 
+              class="btn-cancel" 
+              (click)="closeCreateOrderModal()">
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="action-btn"
+              [disabled]="!newOrderForm.form.valid || newOrder.items.length === 0">
+              Crear Orden
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -258,6 +346,24 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historial de Órdenes Completadas (Opcional) -->
+  <div class="cart-section">
+      <h3>📋 Historial de Órdenes Completadas</h3>
+      <button class="show-btn" (click)="showCompletedOrders = !showCompletedOrders">
+        {{ showCompletedOrders ? 'Ocultar' : 'Mostrar' }}
+      </button>
+    <div *ngIf="showCompletedOrders">
+      <div *ngFor="let order of getCompletedOrders()" class="cart-item completed">
+        <h4>#{{order.id}} - {{order.table}} ✅</h4>
+        <p>{{ getItemsString(order) }}</p>
+        <p><strong>{{ getOrderTotal(order) | currency:'USD':'symbol':'1.0-0' }}</strong></p>
+      </div>
+      <div *ngIf="getCompletedOrders().length === 0" class="no-orders">
+        <p>No hay órdenes completadas en el historial</p>
       </div>
     </div>
   </div>

@@ -26,6 +26,15 @@ export class Admin implements OnInit {
   // Órdenes (empleado)
   orders: Order[] = [];
 
+  // Variables para el modal de nueva orden
+  showCreateOrderModal: boolean = false;
+  newOrder: any = {
+    table: '',
+    items: [],
+    status: 'pending'
+  };
+  selectedProductId: string = '';
+
   // Variables para el modal de nuevo producto
   showAddProductModal: boolean = false;
   newProduct: any = {
@@ -38,6 +47,7 @@ export class Admin implements OnInit {
   showEditOrderModal: boolean = false;
   editingOrder: Order | null = null;
   originalOrder: Order | null = null;
+  showCompletedOrders: boolean = false;
 
   constructor(
     private router: Router,
@@ -137,22 +147,38 @@ export class Admin implements OnInit {
   }
 
   updateOrder() {
-  if (this.editingOrder && this.originalOrder) {
-    this.ordersService.updateOrder(this.editingOrder).subscribe({
-      next: (response) => {
-        console.log('Orden actualizada:', response);
-        
-        // Actualizar la orden original con los nuevos valores
-        this.originalOrder!.table = this.editingOrder!.table;
-        this.originalOrder!.status = this.editingOrder!.status;
-        this.originalOrder!.items = this.editingOrder!.items.map(item => ({ ...item }));
-        
-        this.closeEditOrderModal();
-        alert('Orden actualizada exitosamente');
-      },
-      error: (error) => {
-        console.error('Error al actualizar orden:', error);
-        alert('Error al actualizar la orden');
+    if (this.editingOrder && this.originalOrder) {
+      // Crear objeto sin total para enviar al backend
+      const orderToUpdate: any = {
+        id: this.editingOrder.id,
+        table: this.editingOrder.table,
+        status: this.editingOrder.status,
+        items: this.editingOrder.items.map(item => ({ ...item }))
+      };
+
+      this.ordersService.updateOrder(orderToUpdate).subscribe({
+        next: (response) => {
+          console.log('Orden actualizada:', response);
+          
+          // Actualizar la orden original con los nuevos valores
+          this.originalOrder!.table = this.editingOrder!.table;
+          this.originalOrder!.status = this.editingOrder!.status;
+          this.originalOrder!.items = this.editingOrder!.items.map(item => ({ ...item }));
+          
+          // Si la orden se marcó como completada, quitarla de la vista
+          if (this.editingOrder!.status === 'completed') {
+            const index = this.orders.findIndex(o => o.id === this.editingOrder!.id);
+            if (index !== -1) {
+              this.orders.splice(index, 1);
+            }
+          }
+          
+          this.closeEditOrderModal();
+          alert('Orden actualizada exitosamente');
+        },
+        error: (error) => {
+          console.error('Error al actualizar orden:', error);
+          alert('Error al actualizar la orden');
         }
       });
     }
@@ -202,57 +228,53 @@ export class Admin implements OnInit {
   }
 
   changeOrderStatus(order: Order, newStatus: 'canceled' | 'pending' | 'preparing' | 'completed') {
-    const previousStatus = order.status;
-    
-    // Actualizar el estado local primero
-    order.status = newStatus;
-    
-    // Actualizar en la base de datos
-    this.ordersService.updateOrderStatus(order.id, newStatus).subscribe({
-      next: (response) => {
-        console.log('Estado de orden actualizado:', response);
-        
-        // Solo eliminar las órdenes canceladas
-        if (newStatus === 'canceled') {
-          this.ordersService.deleteOrder(order.id).subscribe({
-            next: (deleteResponse) => {
-              console.log('Orden cancelada eliminada:', deleteResponse);
-              // Eliminar del array local
-              const index = this.orders.findIndex(o => o.id === order.id);
-              if (index !== -1) {
-                this.orders.splice(index, 1);
-              }
-            },
-            error: (deleteError) => {
-              console.error('Error al eliminar orden cancelada:', deleteError);
-              alert('Error al eliminar la orden cancelada');
+    if (newStatus === 'canceled') {
+      if (confirm('¿Estás seguro de que quieres cancelar y eliminar esta orden?')) {
+        this.ordersService.deleteOrder(order.id).subscribe({
+          next: (deleteResponse) => {
+            console.log('Orden eliminada:', deleteResponse);
+            // Eliminar del array local
+            const index = this.orders.findIndex(o => o.id === order.id);
+            if (index !== -1) {
+              this.orders.splice(index, 1);
             }
-          });
-        } 
-        // Para órdenes completadas, solo quitarlas de la vista pero mantener en BD
-        else if (newStatus === 'completed') {
-          const index = this.orders.findIndex(o => o.id === order.id);
-          if (index !== -1) {
-            this.orders.splice(index, 1);
+            alert('Orden eliminada correctamente');
+          },
+          error: (deleteError) => {
+            console.error('Error al eliminar orden:', deleteError);
+            alert('Error al eliminar la orden');
           }
-        }
-      },
-      error: (error) => {
-        console.error('Error al actualizar estado de orden:', error);
-        alert('Error al actualizar el estado de la orden');
-        // Revertir el cambio local
-        order.status = previousStatus;
+        });
       }
-    });
-  }
-
-
-  private getPreviousStatus(order: Order, newStatus: string): OrderStatus {
-    // Lógica simple para revertir al estado anterior
-    if (newStatus === 'preparing') return 'pending';
-    if (newStatus === 'completed') return 'preparing';
-    if (newStatus === 'canceled') return order.status; // Mantener el estado actual si no se puede cancelar
-    return 'pending';
+    } else {
+      // Para otros estados (pending, preparing, completed)
+      const previousStatus = order.status;
+      
+      // Actualizar el estado local primero
+      order.status = newStatus;
+      
+      // Actualizar en la base de datos
+      this.ordersService.updateOrderStatus(order.id, newStatus).subscribe({
+        next: (response) => {
+          console.log('Estado de orden actualizado:', response);
+          
+          // Para órdenes completadas, quitarlas de la vista local pero mantener en BD
+          if (newStatus === 'completed') {
+            const index = this.orders.findIndex(o => o.id === order.id);
+            if (index !== -1) {
+              this.orders.splice(index, 1);
+            }
+            alert('Orden marcada como lista y completada');
+          }
+        },
+        error: (error) => {
+          console.error('Error al actualizar estado de orden:', error);
+          alert('Error al actualizar el estado de la orden');
+          // Revertir el cambio local
+          order.status = previousStatus;
+        }
+      });
+    }
   }
 
   getOrderTotal(order: Order): number {
@@ -307,6 +329,115 @@ export class Admin implements OnInit {
         }
       });
     }
+  }
+
+  // Métodos para el modal de nueva orden
+  openCreateOrderModal() {
+    this.newOrder = {
+      table: '',
+      items: [],
+      status: 'pending'
+    };
+    this.selectedProductId = '';
+    this.showCreateOrderModal = true;
+  }
+
+  closeCreateOrderModal() {
+    this.showCreateOrderModal = false;
+  }
+
+  onProductSelect() {
+    if (this.selectedProductId) {
+      const productId = parseInt(this.selectedProductId);
+      const product = this.products.find(p => p.id === productId);
+      
+      if (product) {
+        // Verificar si el producto ya está en la orden
+        const existingItem = this.newOrder.items.find((item: any) => item.id === product.id);
+        
+        if (existingItem) {
+          existingItem.qty += 1;
+        } else {
+          // Agregar nuevo item a la orden
+          this.newOrder.items.push({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            qty: 1,
+            category: product.category
+          });
+        }
+      }
+    }
+  }
+
+  clearProductSelection() {
+    this.selectedProductId = '';
+  }
+
+  increaseNewItemQuantity(index: number) {
+    this.newOrder.items[index].qty += 1;
+  }
+
+  decreaseNewItemQuantity(index: number) {
+    if (this.newOrder.items[index].qty > 1) {
+      this.newOrder.items[index].qty -= 1;
+    }
+  }
+
+  removeItemFromNewOrder(index: number) {
+    if (confirm('¿Estás seguro de que quieres eliminar este item de la orden?')) {
+      this.newOrder.items.splice(index, 1);
+    }
+  }
+
+  getNewOrderTotal(): number {
+    return this.newOrder.items.reduce((sum: number, item: any) => sum + item.price * item.qty, 0);
+  }
+
+  createNewOrder() {
+    if (this.newOrder.table && this.newOrder.items.length > 0) {
+      // Generar ID único para la nueva orden
+      const newOrderId = this.orders.length > 0 ? Math.max(...this.orders.map(o => o.id)) + 1 : 1;
+      
+      // Crear orden sin total - el backend lo calculará automáticamente
+      const orderToCreate: any = {
+        id: newOrderId,
+        table: this.newOrder.table,
+        items: this.newOrder.items.map((item: any) => ({
+          ...item
+        })),
+        status: 'pending' as OrderStatus
+        // NO incluir total - el backend lo calculará automáticamente
+      };
+
+      console.log('Creando nueva orden:', orderToCreate);
+
+      // Llamar al servicio para crear la orden en MongoDB
+      this.ordersService.createOrder(orderToCreate).subscribe({
+        next: (response) => {
+          console.log('Orden creada:', response);
+          
+          // Agregar la orden localmente (usar la respuesta del backend que incluye el total calculado)
+          this.orders.push(response);
+          
+          // Cerrar el modal
+          this.closeCreateOrderModal();
+          
+          alert('Orden creada exitosamente');
+        },
+        error: (error) => {
+          console.error('Error al crear orden:', error);
+          alert('Error al crear la orden: ' + (error.error?.message || error.message));
+        }
+      });
+    } else {
+      alert('Por favor completa la mesa y agrega al menos un producto');
+    }
+  }
+
+  getCompletedOrders(): Order[] {
+    return this.orders.filter(order => order.status === 'completed');
   }
 
   logout() {
