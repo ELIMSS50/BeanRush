@@ -1,91 +1,140 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { OrdersService } from '../services/orders.service';
 
 @Component({
   selector: 'app-display',
   templateUrl: './pantalla.html',
-  styleUrls: ['./pantalla.css']
-  ,imports: [CommonModule]
+  styleUrls: ['./pantalla.css'],
+  imports: [CommonModule]
 })
 export class Pantalla implements OnInit, OnDestroy {
-  orders = [
-    { 
-      number: '001', 
-      table: 'Mesa 3', 
-      items: 'Café x2, Sandwich', 
-      total: 120, 
-      status: 'preparing',
-      time: 5,
-      createdAt: new Date()
-    },
-    { 
-      number: '002', 
-      table: 'Llevar', 
-      items: 'Capuchino, Galleta', 
-      total: 80, 
-      status: 'pending',
-      time: 2,
-      createdAt: new Date()
-    },
-    { 
-      number: '003', 
-      table: 'Mesa 1', 
-      items: 'Té, Postre x2', 
-      total: 150, 
-      status: 'preparing',
-      time: 8,
-      createdAt: new Date()
-    }
-  ];
-
+  orders: any[] = [];
   currentTime = new Date();
   private refreshInterval: any;
+  private ordersInterval: any;
+  private orderStartTimes: Map<number, { startTime: number, totalTime: number }> = new Map();
+
+  constructor(
+    private ordersService: OrdersService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
-    // Actualizar hora cada segundo
+    this.loadOrders();
+    
+    // Actualizar hora y tiempos cada segundo
     this.refreshInterval = setInterval(() => {
       this.currentTime = new Date();
+      this.updateRemainingTimes();
     }, 1000);
 
-    // Simular actualización de órdenes cada 10 segundos
-    setInterval(() => {
-      this.simulateOrderUpdates();
+    // Actualizar órdenes cada 10 segundos
+    this.ordersInterval = setInterval(() => {
+      this.loadOrders();
     }, 10000);
   }
 
   ngOnDestroy() {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-    }
+    if (this.refreshInterval) clearInterval(this.refreshInterval);
+    if (this.ordersInterval) clearInterval(this.ordersInterval);
   }
 
-  simulateOrderUpdates() {
-    // En una app real, aquí harías una petición HTTP
-    this.orders.forEach(order => {
-      if (order.status === 'preparing' && order.time > 0) {
-        order.time--;
-        if (order.time <= 0) {
-          order.status = 'ready';
-        }
+  loadOrders() {
+    this.ordersService.getOrders().subscribe({
+      next: (orders) => {
+        const currentOrders = orders.filter(order => 
+          order.status === 'pending' || order.status === 'preparing'
+        );
+
+        // Para cada orden nueva, establecer tiempo de inicio y duración aleatoria
+        currentOrders.forEach(order => {
+          if (!this.orderStartTimes.has(order.id)) {
+            const totalTime = this.getRandomTime(); // Tiempo aleatorio entre 3-7 minutos
+            this.orderStartTimes.set(order.id, {
+              startTime: Date.now(),
+              totalTime: totalTime
+            });
+          }
+        });
+
+        // Actualizar las órdenes con sus tiempos calculados
+        this.orders = currentOrders.map(order => ({
+          ...order,
+          calculatedTotal: this.getOrderTotal(order),
+          remainingTime: this.calculateRemainingTime(order.id),
+          totalTime: this.orderStartTimes.get(order.id)?.totalTime || 300
+        }));
+      },
+      error: (error) => {
+        console.error('Error al cargar órdenes:', error);
       }
     });
   }
 
+  // Generar tiempo aleatorio entre 3 y 7 minutos (180-420 segundos)
+  getRandomTime(): number {
+    return Math.floor(Math.random() * (420 - 180 + 1)) + 180;
+  }
+
+  updateRemainingTimes() {
+    this.orders.forEach(order => {
+      order.remainingTime = this.calculateRemainingTime(order.id);
+    });
+  }
+
+  calculateRemainingTime(orderId: number): number {
+    const orderTime = this.orderStartTimes.get(orderId);
+    if (!orderTime) return 300;
+
+    const now = Date.now();
+    const elapsedSeconds = Math.floor((now - orderTime.startTime) / 1000);
+    const remaining = Math.max(0, orderTime.totalTime - elapsedSeconds);
+    
+    return remaining;
+  }
+
+  formatTime(seconds: number): string {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  }
+
+  getTimeColor(seconds: number, totalTime: number): string {
+    const percentage = (seconds / totalTime) * 100;
+    
+    if (percentage > 50) return 'time-ok'; // Más del 50% del tiempo - VERDE
+    if (percentage > 25) return 'time-warning'; // Entre 25-50% - NARANJA
+    return 'time-critical'; // Menos del 25% - ROJO
+  }
+
+  getTimeProgress(seconds: number, totalTime: number): number {
+    return Math.max(0, ((totalTime - seconds) / totalTime) * 100);
+  }
+
+  getTimeLabel(totalTime: number): string {
+    const minutes = Math.floor(totalTime / 60);
+    return `${minutes} min`;
+  }
+
+  getOrderTotal(order: any): number {
+    return order.items.reduce((total: number, item: any) => total + (item.price * item.qty), 0);
+  }
+
   getStatusColor(status: string): string {
-    switch(status) {
-      case 'pending': return 'status-pending';
-      case 'preparing': return 'status-preparing';
-      case 'ready': return 'status-ready';
-      default: return 'status-pending';
-    }
+    return status === 'preparing' ? 'status-preparing' : 'status-pending';
   }
 
   getStatusText(status: string): string {
-    switch(status) {
-      case 'pending': return 'PENDIENTE';
-      case 'preparing': return 'PREPARANDO';
-      case 'ready': return 'LISTO';
-      default: return 'PENDIENTE';
-    }
+    return status === 'preparing' ? 'PREPARANDO' : 'PENDIENTE';
+  }
+
+  getItemsString(order: any): string {
+    return order.items.map((item: any) => `${item.name} x${item.qty}`).join(', ');
+  }
+
+  goToEmployeeView() {
+    this.router.navigate(['/employee']);
   }
 }

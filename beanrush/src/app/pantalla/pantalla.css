@@ -1,8 +1,8 @@
 .display-container {
+  padding: 20px;
   background: #1a1a1a;
   color: white;
   min-height: 100vh;
-  padding: 20px;
   font-family: 'Arial', sans-serif;
 }
 
@@ -13,45 +13,63 @@
   margin-bottom: 30px;
   padding: 20px;
   background: #2d2d2d;
-  border-radius: 15px;
+  border-radius: 12px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 30px;
 }
 
 .display-title {
-  font-size: 3rem;
+  font-size: 2.5em;
   margin: 0;
-  color: #00ff00;
+  color: #fff;
 }
 
 .display-time {
-  font-size: 2.5rem;
+  font-size: 1.8em;
   font-weight: bold;
-  color: #ffcc00;
+  color: #4CAF50;
+  background: rgba(76, 175, 80, 0.1);
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 2px solid #4CAF50;
+}
+
+.back-btn {
+  background: #ff6b35;
+  color: white;
+  border: none;
+  padding: 10px 10px;
+  border-radius: 8px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 12px;
 }
 
 .orders-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 20px;
 }
 
 .order-card {
   background: #2d2d2d;
-  padding: 25px;
-  border-radius: 15px;
-  border-left: 8px solid;
-  transition: all 0.3s ease;
+  border-radius: 12px;
+  padding: 20px;
+  border-left: 8px solid #666;
+  position: relative;
 }
 
-.status-pending {
-  border-left-color: #ff4444;
+.order-card.status-pending {
+  border-left-color: #ff9800;
 }
 
-.status-preparing {
-  border-left-color: #ffcc00;
-}
-
-.status-ready {
-  border-left-color: #00ff00;
+.order-card.status-preparing {
+  border-left-color: #2196f3;
 }
 
 .order-header {
@@ -59,70 +77,171 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
-  font-size: 1.4rem;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
 .order-number {
+  font-size: 1.4em;
   font-weight: bold;
-  color: #ffcc00;
+  color: #ff6b35;
 }
 
 .order-table {
+  font-size: 1.2em;
   font-weight: bold;
+  color: #fff;
 }
 
 .order-total {
+  font-size: 1.3em;
   font-weight: bold;
-  color: #00ff00;
+  color: #4CAF50;
 }
 
 .order-items {
-  font-size: 1.3rem;
   margin-bottom: 15px;
-  color: #cccccc;
+  line-height: 1.5;
+  color: #ccc;
+  font-size: 1.1em;
+}
+
+/* Estilos para el timer */
+.order-timer {
+  margin: 15px 0;
+  padding: 15px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.timer-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.timer-icon {
+  font-size: 1.5em;
+}
+
+.timer-display {
+  font-size: 20px;
+  font-weight: bold;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.3);
+  min-width: 70px;
+  text-align: center;
+}
+
+.total-time {
+  font-size: 1em;
+  color: #888;
+  font-weight: bold;
+}
+
+.timer-display.time-ok {
+  color: #4CAF50;
+  border: 2px solid #4CAF50;
+}
+
+.timer-display.time-warning {
+  color: #ff9800;
+  border: 2px solid #ff9800;
+  animation: pulse 1.5s infinite;
+}
+
+.timer-display.time-critical {
+  color: #f44336;
+  border: 2px solid #f44336;
+  animation: pulse 0.8s infinite;
+}
+
+/* Barra de progreso */
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 10px 0;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s linear;
+}
+
+.progress-fill.time-ok {
+  background: #4CAF50;
+}
+
+.progress-fill.time-warning {
+  background: #ff9800;
+}
+
+.progress-fill.time-critical {
+  background: #f44336;
+}
+
+.timer-label {
+  font-size: 0.9em;
+  color: #ccc;
+  font-weight: bold;
 }
 
 .order-footer {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 1.2rem;
-}
-
-.order-time {
-  color: #ffcc00;
+  justify-content: flex-end;
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.1);
 }
 
 .order-status {
   font-weight: bold;
-  padding: 5px 15px;
+  padding: 6px 12px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.1);
+  font-size: 0.9em;
+  text-transform: uppercase;
 }
 
 .status-pending-text {
-  color: #ff4444;
+  background: rgba(255, 152, 0, 0.2);
+  color: #ff9800;
+  border: 1px solid #ff9800;
 }
 
 .status-preparing-text {
-  color: #ffcc00;
-}
-
-.status-ready-text {
-  color: #00ff00;
+  background: rgba(33, 150, 243, 0.2);
+  color: #2196f3;
+  border: 1px solid #2196f3;
 }
 
 .no-orders {
   text-align: center;
-  padding: 100px 20px;
-  color: #666;
+  padding: 60px 20px;
+  color: #888;
 }
 
 .no-orders h2 {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
+  font-size: 2em;
+  margin-bottom: 10px;
+  color: #ccc;
 }
 
-.no-orders p {
-  font-size: 1.5rem;
+/* Animación de pulso para tiempos críticos */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* Efecto de brillo para tiempos críticos */
+.timer-display.time-critical {
+  box-shadow: 0 0 10px rgba(244, 67, 54, 0.5);
 }

@@ -1,10 +1,15 @@
 <div class="display-container">
   <!-- Encabezado -->
   <div class="display-header">
-    <h1 class="display-title">Ordenes</h1>
-    <div class="display-time">
-      {{ currentTime | date:'HH:mm:ss' }}
+    <div class="header-content">
+      <h1 class="display-title">Órdenes en Proceso</h1>
+      <div class="display-time">
+        {{ currentTime | date:'HH:mm:ss' }}
+      </div>
     </div>
+    <button class="back-btn" (click)="goToEmployeeView()">
+      ← Volver a Empleado
+    </button>
   </div>
 
   <!-- Grid de Órdenes -->
@@ -13,19 +18,37 @@
          class="order-card {{ getStatusColor(order.status) }}">
       
       <div class="order-header">
-        <span class="order-number">#{{ order.number }}</span>
+        <span class="order-number">#{{ order.id }}</span>
         <span class="order-table">{{ order.table }}</span>
-        <span class="order-total">${{ order.total }}</span>
+        <span class="order-total">{{ getOrderTotal(order) | currency:'USD':'symbol':'1.0-0' }}</span>
       </div>
 
       <div class="order-items">
-        {{ order.items }}
+        {{ getItemsString(order) }}
+      </div>
+
+      <!-- Timer con barra de progreso -->
+      <div class="order-timer">
+        <div class="timer-header">
+          <div class="timer-display {{ getTimeColor(order.remainingTime, order.totalTime) }}">
+            {{ formatTime(order.remainingTime) }}
+          </div>
+        </div>
+        <div class="total-time">{{ getTimeLabel(order.totalTime) }}</div>
+
+        <!-- Barra de progreso -->
+        <div class="progress-bar">
+          <div class="progress-fill {{ getTimeColor(order.remainingTime, order.totalTime) }}" 
+               [style.width.%]="getTimeProgress(order.remainingTime, order.totalTime)">
+          </div>
+        </div>
+        
+        <div class="timer-label">
+          {{ order.remainingTime > 0 ? 'Tiempo restante' : '¡TIEMPO AGOTADO!' }}
+        </div>
       </div>
 
       <div class="order-footer">
-        <span class="order-time" *ngIf="order.status === 'preparing'">
-          ⏱ {{ order.time }} min
-        </span>
         <span class="order-status {{ getStatusColor(order.status) }}-text">
           {{ getStatusText(order.status) }}
         </span>
@@ -35,6 +58,9 @@
 
   <div *ngIf="orders.length === 0" class="no-orders">
     <h2>No hay órdenes activas</h2>
-    <p>Valla ha estado muy solo por aquí</p>
+    <p>Las órdenes aparecerán aquí automáticamente</p>
+    <button class="back-btn" (click)="goToEmployeeView()">
+      ← Volver a Empleado
+    </button>
   </div>
 </div>
