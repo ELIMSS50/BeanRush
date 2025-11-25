@@ -182,7 +182,6 @@ export class Admin implements OnInit {
     return this.editingOrder.items.reduce((sum, item) => sum + item.price * item.qty, 0);
   }
 
-  // Resto de los métodos existentes...
   filterProducts(category: string) {
     this.selectedCategory = category;
     this.filteredProducts = category === 'all'
@@ -203,6 +202,8 @@ export class Admin implements OnInit {
   }
 
   changeOrderStatus(order: Order, newStatus: 'canceled' | 'pending' | 'preparing' | 'completed') {
+    const previousStatus = order.status;
+    
     // Actualizar el estado local primero
     order.status = newStatus;
     
@@ -211,24 +212,40 @@ export class Admin implements OnInit {
       next: (response) => {
         console.log('Estado de orden actualizado:', response);
         
-        // Si la orden está cancelada o completada, la eliminamos del array local después de un tiempo
-        if (newStatus === 'canceled' || newStatus === 'completed') {
-          setTimeout(() => {
-            const index = this.orders.findIndex(o => o.id === order.id);
-            if (index !== -1) {
-              this.orders.splice(index, 1);
+        // Solo eliminar las órdenes canceladas
+        if (newStatus === 'canceled') {
+          this.ordersService.deleteOrder(order.id).subscribe({
+            next: (deleteResponse) => {
+              console.log('Orden cancelada eliminada:', deleteResponse);
+              // Eliminar del array local
+              const index = this.orders.findIndex(o => o.id === order.id);
+              if (index !== -1) {
+                this.orders.splice(index, 1);
+              }
+            },
+            error: (deleteError) => {
+              console.error('Error al eliminar orden cancelada:', deleteError);
+              alert('Error al eliminar la orden cancelada');
             }
-          }, 1000); // Esperar 1 segundo antes de eliminar localmente
+          });
+        } 
+        // Para órdenes completadas, solo quitarlas de la vista pero mantener en BD
+        else if (newStatus === 'completed') {
+          const index = this.orders.findIndex(o => o.id === order.id);
+          if (index !== -1) {
+            this.orders.splice(index, 1);
+          }
         }
       },
       error: (error) => {
         console.error('Error al actualizar estado de orden:', error);
         alert('Error al actualizar el estado de la orden');
-        // Revertir el cambio local si hay error
-        order.status = this.getPreviousStatus(order, newStatus);
+        // Revertir el cambio local
+        order.status = previousStatus;
       }
     });
   }
+
 
   private getPreviousStatus(order: Order, newStatus: string): OrderStatus {
     // Lógica simple para revertir al estado anterior
