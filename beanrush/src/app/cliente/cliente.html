@@ -204,7 +204,7 @@
   </div>
 </div>
 
-<!-- Modal para seleccionar mesa/cliente para el pedido -->
+  <!-- Modal para seleccionar mesa/cliente para el pedido -->
 <div *ngIf="showCustomerModal" class="modal-overlay">
   <div class="modal-content">
     <div class="modal-header">
@@ -261,7 +261,7 @@
           <small class="input-help">Ingresa el número de tu mesa</small>
         </div>
 
-        <!-- Campo para nombre del cliente -->
+        <!-- Campos para pedido para llevar -->
         <div *ngIf="customerInfo.type === 'name'" class="form-group">
           <label for="customerName">Nombre para el pedido:</label>
           <input 
@@ -272,6 +272,19 @@
             placeholder="Ej: Juan Pérez"
             maxlength="50">
           <small class="input-help">Ingresa tu nombre para identificar el pedido</small>
+        </div>
+
+        <!-- NUEVO: Campo para teléfono (solo para llevar) -->
+        <div *ngIf="customerInfo.type === 'name'" class="form-group">
+          <label for="customerPhone">Número de WhatsApp:</label>
+          <input 
+            type="tel" 
+            id="customerPhone" 
+            [(ngModel)]="customerInfo.customerPhone"
+            class="form-input"
+            placeholder="Ej: 5551234567"
+            maxlength="15">
+          <small class="input-help">Te enviaremos una notificación cuando tu pedido esté listo</small>
         </div>
       </div>
 
@@ -294,6 +307,37 @@
         </button>
         <button type="button" class="btn-confirm" (click)="confirmCustomerInfo()">
           Continuar al Pago
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NUEVO: Modal de confirmación WhatsApp -->
+<div *ngIf="showWhatsAppModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>✅ Pedido Confirmado</h3>
+      <button class="close-btn" (click)="closeWhatsAppModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="whatsapp-confirmation">
+        <div class="whatsapp-icon">📱</div>
+        <h4>Te enviaremos un mensaje por WhatsApp</h4>
+        <p>Recibirás una notificación en <strong>{{ customerInfo.customerPhone }}</strong> cuando tu pedido esté listo para recoger en la barra.</p>
+        <div class="order-details">
+          <p><strong>Número de orden:</strong> #{{ lastOrderId }}</p>
+          <p><strong>Nombre:</strong> {{ customerInfo.customerName }}</p>
+          <p><strong>Total:</strong> {{ total | currency:'USD':'symbol':'1.0-0' }}</p>
+        </div>
+        <div class="whatsapp-note">
+          <small>💡 Asegúrate de tener WhatsApp instalado y disponible</small>
+        </div>
+      </div>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn-confirm" (click)="closeWhatsAppModal()">
+          Entendido
         </button>
       </div>
     </div>

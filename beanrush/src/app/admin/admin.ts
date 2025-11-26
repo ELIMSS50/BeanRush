@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-admin',
   templateUrl: './admin.html',
+  styleUrls: ['./admin.css'],
   standalone: true,
   imports: [CommonModule, FormsModule],
 })

@@ -81,21 +81,61 @@ export class Pagos implements OnInit {
       await this.simulatePaymentProcessing();
       
       // Guardar la orden en la base de datos
-      await this.saveOrderToDatabase();
+      const savedOrder = await this.saveOrderToDatabase();
       
       this.paymentStatus = 'PAGO EXITOSO - ORDEN CREADA';
       this.addLog('✅ Pago completado y orden guardada en sistema');
       
-      // Limpiar y redirigir después de éxito
-      setTimeout(() => {
-        this.cleanupAndRedirect();
-      }, 2000);
+      // NUEVO: Mostrar notificación WhatsApp si es pedido para llevar
+      this.handlePostPaymentActions(savedOrder);
       
     } catch (error) {
       this.paymentStatus = 'ERROR EN EL PAGO';
       this.addLog('❌ Error al procesar el pago');
       this.isProcessing = false;
     }
+  }
+
+  // NUEVO: Manejar acciones después del pago
+  private handlePostPaymentActions(savedOrder: any) {
+    const currentOrder = JSON.parse(localStorage.getItem('currentOrder') || '{}');
+    const customerInfo = currentOrder.customerInfo;
+    
+    // Verificar si es pedido para llevar y tiene teléfono
+    if (customerInfo && customerInfo.type === 'name' && customerInfo.customerPhone) {
+      this.addLog('📱 Preparando notificación WhatsApp para pedido para llevar');
+      
+      // Guardar información para mostrar en el modal
+      localStorage.setItem('whatsappNotification', JSON.stringify({
+        show: true,
+        customerName: customerInfo.customerName,
+        customerPhone: customerInfo.customerPhone,
+        orderId: savedOrder.id || savedOrder._id,
+        total: this.currentOrder.total
+      }));
+      
+      // Redirigir a cliente para mostrar el modal
+      setTimeout(() => {
+        this.cleanupAndRedirect();
+      }, 1500);
+      
+    } else {
+      // Para pedidos de mesa, redirigir normalmente
+      setTimeout(() => {
+        this.cleanupAndRedirect();
+      }, 2000);
+    }
+  }
+
+  // MODIFICAR: El método cleanupAndRedirect para no resetear todo inmediatamente
+  private cleanupAndRedirect() {
+    // Limpiar solo lo necesario, mantener la info para el modal
+    this.isProcessing = false;
+    this.selectedMethod = '';
+    this.cashReceived = 0;
+    
+    // No limpiar currentOrder todavía, se necesita en cliente
+    this.router.navigate(['/customer']);
   }
 
   private simulatePaymentProcessing(): Promise<void> {
@@ -140,16 +180,6 @@ export class Pagos implements OnInit {
       this.addLog('❌ Pago simulado rechazado');
       this.isProcessing = false;
     }, 1500);
-  }
-
-  private cleanupAndRedirect() {
-    // Limpiar localStorage
-    localStorage.removeItem('currentOrder');
-    
-    // Redirigir al menú principal
-    setTimeout(() => {
-      this.router.navigate(['/customer']);
-    }, 1000);
   }
 
   cancelPayment() {

@@ -24,9 +24,13 @@ export class Cliente implements OnInit {
   customerInfo: any = {
     type: 'table',
     tableNumber: '',
-    customerName: ''
+    customerName: '',
+    customerPhone: ''
   };
+
   showCustomerModal: boolean = false;
+  showWhatsAppModal: boolean = false;
+  lastOrderId: number = 0;
 
   constructor(
     private router: Router,
@@ -38,10 +42,52 @@ export class Cliente implements OnInit {
     const userData = localStorage.getItem('currentUser');
     this.user = userData ? JSON.parse(userData) : null;
 
+    // Si no hay usuario, redirigir al visitante
+    if (!this.user) {
+      this.router.navigate(['/visitante']);
+      return;
+    }
+
+    this.loadProducts();
+    
+    // Verificar si hay notificación WhatsApp pendiente
+    this.checkWhatsAppNotification();
+  }
+
+  loadProducts() {
     this.productService.getProducts().subscribe(data => {
       this.products = data;
-      this.filteredProducts = data;
+      this.filteredProducts = this.products.filter(p => 
+        p.category !== 'combos' && p.category !== 'promociones'
+      );
     });
+  }
+
+  // NUEVO: Verificar notificación WhatsApp después del pago
+  checkWhatsAppNotification() {
+    const whatsappNotification = localStorage.getItem('whatsappNotification');
+    
+    if (whatsappNotification) {
+      const notification = JSON.parse(whatsappNotification);
+      
+      if (notification.show) {
+        // Cargar información del pedido actual
+        const currentOrder = JSON.parse(localStorage.getItem('currentOrder') || '{}');
+        
+        this.customerInfo = currentOrder.customerInfo || {};
+        this.lastOrderId = notification.orderId;
+        this.total = notification.total;
+        
+        // Mostrar modal de WhatsApp
+        this.showWhatsAppModal = true;
+        
+        // Limpiar la notificación
+        localStorage.removeItem('whatsappNotification');
+        
+        // Simular mensaje WhatsApp
+        this.simulateWhatsAppMessage();
+      }
+    }
   }
 
   // MÉTODOS PARA COMBOS Y PROMOCIONES
@@ -139,7 +185,8 @@ export class Cliente implements OnInit {
     this.customerInfo = {
       type: 'table',
       tableNumber: '',
-      customerName: ''
+      customerName: '',
+      customerPhone: ''
     };
   }
 
@@ -149,9 +196,16 @@ export class Cliente implements OnInit {
       return;
     }
     
-    if (this.customerInfo.type === 'name' && !this.customerInfo.customerName) {
-      alert('Por favor ingresa el nombre del cliente');
-      return;
+    if (this.customerInfo.type === 'name') {
+      if (!this.customerInfo.customerName) {
+        alert('Por favor ingresa el nombre del cliente');
+        return;
+      }
+      // Validar teléfono para pedidos para llevar
+      if (!this.customerInfo.customerPhone) {
+        alert('Por favor ingresa tu número de WhatsApp para recibir notificaciones');
+        return;
+      }
     }
 
     this.hacerPago();
@@ -182,7 +236,9 @@ export class Cliente implements OnInit {
       total: this.total,
       customerType: this.customerInfo.type,
       originalTable: this.customerInfo.tableNumber,
-      originalName: this.customerInfo.customerName
+      originalName: this.customerInfo.customerName,
+      customerPhone: this.customerInfo.customerPhone,
+      orderDate: new Date().toISOString()
     };
 
     // Guardar en localStorage para usar en el componente de pagos
@@ -197,9 +253,49 @@ export class Cliente implements OnInit {
     this.router.navigate(['/pagos']);
   }
 
+  // NUEVO: Simular envío de mensaje WhatsApp (mejorado)
+  simulateWhatsAppMessage() {
+    const phoneNumber = this.customerInfo.customerPhone;
+    const customerName = this.customerInfo.customerName;
+    const orderId = this.lastOrderId;
+    const total = this.total;
+    
+    console.log('📱 ENVIANDO MENSAJE WHATSAPP:');
+    console.log('──────────────────────────────');
+    console.log(`📞 Para: +${phoneNumber}`);
+    console.log(`👤 Cliente: ${customerName}`);
+    console.log(`📦 Orden #: ${orderId}`);
+    console.log(`💵 Total: $${total}`);
+    console.log(`⏰ Hora: ${new Date().toLocaleTimeString()}`);
+    console.log('📝 Mensaje: "¡Hola! Tu pedido está listo para recoger en la barra. ¡Te esperamos!"');
+    console.log('──────────────────────────────');
+  }
+
+  // NUEVO: Cerrar modal de WhatsApp y limpiar todo
+  closeWhatsAppModal() {
+    this.showWhatsAppModal = false;
+    this.resetOrder();
+  }
+
+  // Resetear orden completamente
+  resetOrder() {
+    this.cart = [];
+    this.total = 0;
+    this.customerInfo = {
+      type: 'table',
+      tableNumber: '',
+      customerName: '',
+      customerPhone: ''
+    };
+    // Limpiar todo del localStorage
+    localStorage.removeItem('currentOrder');
+    localStorage.removeItem('whatsappNotification');
+  }
+
   logout() {
     localStorage.removeItem('currentUser');
     localStorage.removeItem('currentOrder');
+    localStorage.removeItem('whatsappNotification');
     this.router.navigate(['/login']);
   }
 }

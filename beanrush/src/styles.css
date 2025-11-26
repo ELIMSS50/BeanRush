@@ -760,6 +760,7 @@ body {
 .combos-section, .promotions-section {
   border-radius: 16px;
   margin-top: 25px;
+  background-color: transparent;
 }
 
 .combo-badge, .promo-badge {

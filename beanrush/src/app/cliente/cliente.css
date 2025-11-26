@@ -43,3 +43,62 @@
   color: #666;
   font-size: 0.8em;
 }
+
+/* Estilos para el modal de WhatsApp */
+.whatsapp-confirmation {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.whatsapp-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.whatsapp-confirmation h4 {
+  color: #25D366;
+  margin-bottom: 10px;
+}
+
+.order-details {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+  text-align: left;
+}
+
+.order-details p {
+  margin: 5px 0;
+}
+
+.whatsapp-note {
+  margin-top: 15px;
+  color: #666;
+}
+
+/* Estilos para campos de formulario */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.input-help {
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 5px;
+  display: block;
+}
