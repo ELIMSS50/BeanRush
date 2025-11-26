@@ -7,6 +7,9 @@ export interface Product {
   price: number;
   qty: number;
   category: string;
+  isCombo?: boolean;
+  description?: string;
+  includedProducts?: any[];
 }
 
 export interface Order {

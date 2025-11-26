@@ -13,7 +13,7 @@
 
   <!-- Productos -->
   <div class="products-section">
-    <h3>Productos</h3>
+    <h3>🛍️ Productos</h3>
     <div class="category-filters">
       <button 
           class="filter-btn" 
@@ -39,97 +39,99 @@
           (click)="filterProducts('postres')">
           Postres
       </button>
+    </div>
+    <div class="add-category">
       <button 
-          class="addNew-btn" 
-          [class.active]="selectedCategory === 'all'"
-          (click)="openAddProductModal()">
-          Agregar nuevo producto
-    </button>
-    </div>
+            class="addNew-btn" 
+            (click)="openAddProductModal()">
+            Agregar nuevo producto
+      </button>
+    </div>    
 
-  <!-- Ventana emergente para agregar un nuevo producto-->
-  <div *ngIf="showAddProductModal" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Agregar Nuevo Producto</h3>
-        <button class="close-btn" (click)="closeAddProductModal()">×</button>
+    <!-- Ventana emergente para agregar un nuevo producto -->
+    <div *ngIf="showAddProductModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Agregar Nuevo Producto</h3>
+          <button class="close-btn" (click)="closeAddProductModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="addNewProduct()" #productForm="ngForm">
+            <div class="form-group">
+              <label for="productName">Nombre del Producto:</label>
+              <input 
+                type="text" 
+                id="productName" 
+                name="productName" 
+                [(ngModel)]="newProduct.name" 
+                required 
+                class="form-input"
+                placeholder="Ej: Café Espresso">
+            </div>
+
+            <div class="form-group">
+              <label for="productPrice">Precio:</label>
+              <input 
+                type="number" 
+                id="productPrice" 
+                name="productPrice" 
+                [(ngModel)]="newProduct.price" 
+                required 
+                min="0"
+                step="0.50"
+                class="form-input"
+                placeholder="Ej: 55.00">
+            </div>
+
+            <div class="form-group">
+              <label for="productCategory">Categoría:</label>
+              <select 
+                id="productCategory" 
+                name="productCategory" 
+                [(ngModel)]="newProduct.category" 
+                required 
+                class="form-input">
+                <option value="">Selecciona una categoría</option>
+                <option value="bebidas">Bebidas</option>
+                <option value="comida">Comida</option>
+                <option value="postres">Postres</option>
+              </select>
+            </div>
+
+            <div class="modal-actions">
+              <button 
+                type="button" 
+                class="btn-cancel" 
+                (click)="closeAddProductModal()">
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                class="action-btn"
+                [disabled]="!productForm.form.valid">
+                Agregar Producto
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-      <div class="modal-body">
-        <form (ngSubmit)="addNewProduct()" #productForm="ngForm">
-          <div class="form-group">
-            <label for="productName">Nombre del Producto:</label>
-            <input 
-              type="text" 
-              id="productName" 
-              name="productName" 
-              [(ngModel)]="newProduct.name" 
-              required 
-              class="form-input"
-              placeholder="Ej: Café Espresso">
-          </div>
-
-          <div class="form-group">
-            <label for="productPrice">Precio:</label>
-            <input 
-              type="number" 
-              id="productPrice" 
-              name="productPrice" 
-              [(ngModel)]="newProduct.price" 
-              required 
-              min="0"
-              step="0.50"
-              class="form-input"
-              placeholder="Ej: 55.00">
-          </div>
-
-          <div class="form-group">
-            <label for="productCategory">Categoría:</label>
-            <select 
-              id="productCategory" 
-              name="productCategory" 
-              [(ngModel)]="newProduct.category" 
-              required 
-              class="form-input">
-              <option value="">Selecciona una categoría</option>
-              <option value="bebidas">Bebidas</option>
-              <option value="comida">Comida</option>
-              <option value="postres">Postres</option>
-            </select>
-          </div>
-
-          <div class="modal-actions">
-            <button 
-              type="button" 
-              class="btn-cancel" 
-              (click)="closeAddProductModal()">
-              Cancelar
-            </button>
-            <button 
-              type="submit" 
-              class="action-btn"
-              [disabled]="!productForm.form.valid">
-              Agregar Producto
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
-  </div>
 
     <div class="products-grid">
-      <div *ngFor="let product of filteredProducts" class="product-card">
+      <div *ngFor="let product of getRegularProducts()" class="product-card">
         <div class="product-image">
             <div class="image-placeholder">{{product.name.charAt(0)}}</div>
         </div>
         <div class="product-info">
           <h4>{{product.name}}</h4>
-          <p>{{product.category}}</p>
+          <p class="product-category">{{product.category}}</p>
           <p><strong>{{ product.price | currency:'USD':'symbol':'1.0-0' }}</strong></p>
+          
           <div class="container-btn">
             <button 
                 class="modify-btn" 
                 (click)="modifyProduct(product)">
-                 Editar
+                Editar
             </button>
             <button 
                 class="erase-btn" 
@@ -142,10 +144,366 @@
     </div>
   </div>
 
+  <!-- Combos -->
+  <div class="combos-section">
+      <h3>🔄 Combos</h3>
+    <div class="add-category">
+      <button 
+          class="addNew-btn" 
+          (click)="openAddComboPromModal()">
+          Agregar nuevo combo
+      </button>
+    </div>
+
+    <div class="products-grid">
+      <div *ngFor="let combo of getCombos()" class="product-card combo-card">
+        <div class="product-image">
+            <div class="image-placeholder">{{combo.name.charAt(0)}}</div>
+        </div>
+        <div class="product-info">
+          <h4>{{combo.name}}</h4>
+          <p class="product-category">{{combo.category}}</p>
+          
+          <!-- Mostrar productos incluidos -->
+          <div *ngIf="combo.includedProducts" class="included-products">
+            <small><strong>Incluye:</strong></small>
+            <div *ngFor="let included of combo.includedProducts" class="included-item">
+              <span>{{included.name}} x{{included.qty}}</span>
+            </div>
+          </div>
+          <p><strong>{{ combo.price | currency:'USD':'symbol':'1.0-0' }}</strong></p>
+          <div class="container-btn">
+            <button 
+                class="modify-btn" 
+                (click)="openEditComboPromModal(combo)">
+                Editar
+            </button>
+            <button 
+                class="erase-btn" 
+                (click)="eraseProduct(combo)">
+                Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Promociones -->
+  <div class="promotions-section">
+      <h3>🎯 Promociones</h3>
+      <div class="add-category">
+      <button 
+          class="addNew-btn" 
+          (click)="openAddComboPromModal()">
+          Agregar nueva promoción
+      </button>
+    </div>
+
+    <div class="products-grid">
+      <div *ngFor="let promo of getPromotions()" class="product-card promo-card">
+        <div class="product-image">
+            <div class="image-placeholder">{{promo.name.charAt(0)}}</div>
+            
+        </div>
+        <div class="product-info">
+          <h4>{{promo.name}}</h4>
+          <p class="product-category">{{promo.category}}</p>
+          
+          <!-- Mostrar productos incluidos -->
+          <div *ngIf="promo.includedProducts" class="included-products">
+            <small><strong>Incluye:</strong></small>
+            <div *ngFor="let included of promo.includedProducts" class="included-item">
+              <span>{{included.name}} x{{included.qty}}</span>
+            </div>
+          </div>
+
+          <!-- Mostrar ahorro -->
+          <div class="savings-info">
+            <small class="savings-badge">
+              💰 Ahorras: {{ getComboExistingSavings(promo) | currency:'USD':'symbol':'1.0-0' }}
+              ({{ getComboExistingSavingsPercentage(promo) }}%)
+            </small>
+          </div>
+
+          <p><strong>{{ promo.price | currency:'USD':'symbol':'1.0-0' }}</strong></p>
+          
+          <div class="container-btn">
+            <button 
+                class="modify-btn" 
+                (click)="openEditComboPromModal(promo)">
+                Editar
+            </button>
+            <button 
+                class="erase-btn" 
+                (click)="eraseProduct(promo)">
+                Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ventana emergente para agregar un nuevo combo o promoción -->
+  <div *ngIf="showAddComboPromModal" class="modal-overlay">
+    <div class="modal-content large-modal">
+      <div class="modal-header">
+        <h3>Agregar Nuevo Combo o Promoción</h3>
+        <button class="close-btn" (click)="closeAddComboPromModal()">×</button>
+      </div>
+      <div class="modal-body scrollable-content">
+        <form (ngSubmit)="addNewComboProm()" #comboForm="ngForm">
+          
+          <!-- Información básica -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="comboName">Nombre del Combo/Promoción:</label>
+              <input 
+                type="text" 
+                id="comboName" 
+                name="comboName" 
+                [(ngModel)]="comboPromData.name" 
+                required 
+                class="form-input"
+                placeholder="Ej: Combo Desayuno, Promo 2x1, etc.">
+            </div>
+
+            <div class="form-group">
+              <label for="comboCategory">Tipo:</label>
+              <select 
+                id="comboCategory" 
+                name="comboCategory" 
+                [(ngModel)]="comboPromData.category" 
+                required 
+                class="form-input"
+                (change)="calculateComboPrice()">
+                <option value="">Selecciona un tipo</option>
+                <option value="combos">Combo</option>
+                <option value="promociones">Promoción</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Selección de productos -->
+          <div class="items-section">
+            <h4>Agregar Productos al Combo:</h4>
+            <div class="add-products">
+              <div class="product-selector">
+                <select 
+                  [(ngModel)]="selectedProductForCombo" 
+                  name="selectedProductForCombo"
+                  class="form-input">
+                  <option value="">Selecciona un producto</option>
+                  <option *ngFor="let product of products" 
+                          [value]="product.id"
+                          [disabled]="isProductInCombo(product.id)">
+                    {{product.name}} - {{product.price | currency:'USD':'symbol':'1.0-0'}} ({{product.category}})
+                  </option>
+                </select>
+                <button type="button" class="action-btn" (click)="addProductToCombo()">
+                  Agregar Producto
+                </button>
+              </div>
+              
+              <!-- Lista de productos en el combo -->
+              <div *ngIf="selectedComboProducts.length > 0" class="selected-items">
+                <h5>Productos incluidos:</h5>
+                <div *ngFor="let product of selectedComboProducts; let i = index" class="order-item">
+                  <div class="item-info">
+                    <strong>{{product.name}}</strong>
+                    <span>{{product.price | currency:'USD':'symbol':'1.0-0'}} c/u</span>
+                  </div>
+                  <div class="item-controls">
+                    <button type="button" class="quantity-btn" 
+                            (click)="decreaseComboProductQuantity(i)">-</button>
+                    <span class="quantity"> {{product.comboQty}} </span>
+                    <button type="button" class="quantity-btn" 
+                            (click)="increaseComboProductQuantity(i)">+</button>
+                    <button type="button" class="quantity-btn-remove" 
+                            (click)="removeProductFromCombo(i)">×</button>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="selectedComboProducts.length === 0" class="no-items">
+                <p>No hay productos en el combo. Selecciona productos arriba.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Precio -->
+          <div class="form-group">
+            <label for="comboPrice">Precio final:</label>
+            <div class="price-input-container">
+              <input 
+                type="number" 
+                id="comboPrice" 
+                name="comboPrice" 
+                [(ngModel)]="comboPromData.price" 
+                required 
+                min="0"
+                step="0.50"
+                class="form-input"
+                (input)="onPriceChange()"
+                placeholder="0.00">
+              <small class="price-hint">
+                Precio calculado: {{ getComboProductsTotal() | currency:'USD':'symbol':'1.0-0' }}
+                <span *ngIf="comboPromData.category === 'promociones'" class="discount-badge">
+                  ¡Incluye descuento!
+                </span>
+              </small>
+            </div>
+          </div>
+
+          <!-- Resumen del combo -->
+          <div class="combo-summary" *ngIf="selectedComboProducts.length > 0">
+            <h5>Resumen del Combo:</h5>
+            <div class="summary-items">
+              <div *ngFor="let product of selectedComboProducts" class="summary-item">
+                <span>{{product.name}} x{{product.comboQty}}</span>
+                <span>{{(product.price * product.comboQty) | currency:'USD':'symbol':'1.0-0'}}</span>
+              </div>
+            </div>
+            <div class="summary-total">
+              <strong>Total productos: {{ getComboProductsTotal() | currency:'USD':'symbol':'1.0-0' }}</strong>
+              <br>
+              <strong class="final-price">Precio final: {{ comboPromData.price | currency:'USD':'symbol':'1.0-0' }}</strong>
+              <div *ngIf="comboPromData.price < getComboProductsTotal()" class="savings">
+                Ahorras: {{ (getComboProductsTotal() - comboPromData.price) | currency:'USD':'symbol':'1.0-0' }}
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button 
+              type="button" 
+              class="btn-cancel" 
+              (click)="closeAddComboPromModal()">
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="action-btn"
+              [disabled]="!comboForm.form.valid || selectedComboProducts.length === 0">
+              Agregar Combo/Promoción
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para editar combo/promoción -->
+  <div *ngIf="showEditComboPromModal && editingProduct" class="modal-overlay">
+    <div class="modal-content large-modal">
+      <div class="modal-header">
+        <h3>Editar {{editingProduct.category === 'combos' ? 'Combo' : 'Promoción'}}</h3>
+        <button class="close-btn" (click)="closeEditComboPromModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="updateComboProm()" #editComboForm="ngForm">
+          
+          <!-- Información básica -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editComboName">Nombre:</label>
+              <input 
+                type="text" 
+                id="editComboName" 
+                name="editComboName" 
+                [(ngModel)]="comboPromData.name" 
+                required 
+                class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="editComboCategory">Tipo:</label>
+              <select 
+                id="editComboCategory" 
+                name="editComboCategory" 
+                [(ngModel)]="comboPromData.category" 
+                required 
+                class="form-input">
+                <option value="combos">Combo</option>
+                <option value="promociones">Promoción</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Productos incluidos -->
+          <div class="items-section">
+            <h4>Productos incluidos:</h4>
+            <div *ngIf="editingProduct.includedProducts && editingProduct.includedProducts.length > 0; else noComboItems">
+              <div *ngFor="let product of editingProduct.includedProducts; let i = index" class="order-item">
+                <div class="item-info">
+                  <strong>{{product.name}}</strong>
+                  <span>{{product.price | currency:'USD':'symbol':'1.0-0'}} c/u</span>
+                </div>
+                <div class="item-controls">
+                  <span class="quantity">x{{product.qty}}</span>
+                </div>
+              </div>
+            </div>
+            <ng-template #noComboItems>
+              <p class="no-items-message">No hay productos en este {{editingProduct.category === 'combos' ? 'combo' : 'promoción'}}.</p>
+            </ng-template>
+          </div>
+
+          <!-- Precio y ahorro -->
+          <div class="combo-summary">
+            <h5>Resumen:</h5>
+            <div class="summary-items">
+              <div *ngFor="let product of editingProduct.includedProducts" class="summary-item">
+                <span>{{product.name}} x{{product.qty}}</span>
+                <span>{{(product.price * product.qty) | currency:'USD':'symbol':'1.0-0'}}</span>
+              </div>
+            </div>
+            <div class="summary-total">
+              <strong>Total productos: {{ getComboRealValue(editingProduct) | currency:'USD':'symbol':'1.0-0' }}</strong>
+              <br>
+              <strong class="final-price">Precio final: {{ comboPromData.price | currency:'USD':'symbol':'1.0-0' }}</strong>
+              <div *ngIf="comboPromData.price < getComboRealValue(editingProduct)" class="savings">
+                Ahorras: {{ (getComboRealValue(editingProduct) - comboPromData.price) | currency:'USD':'symbol':'1.0-0' }}
+                ({{ getComboExistingSavingsPercentage(editingProduct) }}% de descuento)
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="editComboPrice">Precio final:</label>
+            <input 
+              type="number" 
+              id="editComboPrice" 
+              name="editComboPrice" 
+              [(ngModel)]="comboPromData.price" 
+              required 
+              min="0"
+              step="0.50"
+              class="form-input">
+          </div>
+
+          <div class="modal-actions">
+            <button 
+              type="button" 
+              class="btn-cancel" 
+              (click)="closeEditComboPromModal()">
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="action-btn">
+              Actualizar {{editingProduct.category === 'combos' ? 'Combo' : 'Promoción'}}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Órdenes Pendientes -->
   <div class="cart-section">
     <h3>🆕 Órdenes Pendientes</h3>
-    <button class="addNew-btn" (click)="openCreateOrderModal()">
+    <button class="addNewOr-btn" (click)="openCreateOrderModal()">
       Agregar nueva orden
     </button>
     <div *ngFor="let order of getPendingOrders()" class="cart-item">
@@ -308,7 +666,6 @@
 
           <div class="items-section">
             <h4>Items de la Orden:</h4>
-            <!-- Agrega *ngIf para verificar que editingOrder.items existe -->
             <div *ngIf="editingOrder.items && editingOrder.items.length > 0; else noItems">
               <div *ngFor="let item of editingOrder.items; let i = index" class="order-item">
                 <div class="item-info">
@@ -350,7 +707,7 @@
     </div>
   </div>
 
-  <!-- Historial de Órdenes Completadas (Opcional) -->
+  <!-- Historial de Órdenes Completadas -->
   <div class="cart-section">
       <h3>📋 Historial de Órdenes Completadas</h3>
       <button class="show-btn" (click)="showCompletedOrders = !showCompletedOrders">

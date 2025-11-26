@@ -16,18 +16,23 @@ export class Admin implements OnInit {
   // Usuario
   user: any;
 
-  // Productos (cliente)
+  // Productos
   products: Product[] = [];
   filteredProducts: Product[] = [];
   selectedCategory: string = 'all';
-  cart: any[] = [];
-  total: number = 0;
 
-  // Órdenes (empleado)
+  // Órdenes
   orders: Order[] = [];
 
-  // Variables para el modal de nueva orden
+  // Variables para modales
   showCreateOrderModal: boolean = false;
+  showAddProductModal: boolean = false;
+  showAddComboPromModal: boolean = false;
+  showEditComboPromModal: boolean = false;
+  showEditOrderModal: boolean = false;
+  showCompletedOrders: boolean = false;
+
+  // Nueva orden
   newOrder: any = {
     table: '',
     items: [],
@@ -35,19 +40,28 @@ export class Admin implements OnInit {
   };
   selectedProductId: string = '';
 
-  // Variables para el modal de nuevo producto
-  showAddProductModal: boolean = false;
+  // Nuevo producto
   newProduct: any = {
     name: '',
     price: 0,
     category: ''
   };
 
-  // Variables para el modal de editar orden
-  showEditOrderModal: boolean = false;
+  // Combos/Promociones
+  selectedComboProducts: any[] = [];
+  selectedProductForCombo: string = '';
+  comboPromData: any = {
+    name: '',
+    price: 0,
+    category: '',
+    description: '',
+    includedProducts: []
+  };
+
+  // Edición
+  editingProduct: any = null;
   editingOrder: Order | null = null;
   originalOrder: Order | null = null;
-  showCompletedOrders: boolean = false;
 
   constructor(
     private router: Router,
@@ -59,25 +73,61 @@ export class Admin implements OnInit {
     const userData = localStorage.getItem('currentUser');
     this.user = userData ? JSON.parse(userData) : null;
 
-    // Traer productos  
+    this.loadProducts();
+    this.loadOrders();
+  }
+
+  // ========== MÉTODOS DE CARGA ==========
+  private loadProducts() {
     this.productService.getProducts().subscribe(data => {  
       this.products = data;  
-      this.filteredProducts = data;  
+      this.filteredProducts = data;
+      console.log('📦 Productos cargados:', this.products.length);
     });  
+  }
 
-    // Traer órdenes  
+  private loadOrders() {
     this.ordersService.getOrders().subscribe(data => {  
       this.orders = data;  
     });  
   }
 
-  // Métodos para el modal de nuevo producto
+  // ========== MÉTODOS DE FILTRADO ==========
+  getRegularProducts(): Product[] {
+    return this.products.filter(product => 
+      product.category !== 'combos' && 
+      product.category !== 'promociones'
+    );
+  }
+
+  getCombos(): Product[] {
+    return this.products.filter(product => 
+      product.category === 'combos'
+    );
+  }
+
+  getPromotions(): Product[] {
+    return this.products.filter(product => 
+      product.category === 'promociones'
+    );
+  }
+
+  isCombo(product: Product): boolean {
+    return product.category === 'combos' || product.category === 'promociones';
+  }
+
+  filterProducts(category: string) {
+    this.selectedCategory = category;
+    this.filteredProducts = category === 'all'
+      ? this.products.filter(p => 
+          p.category !== 'combos' && p.category !== 'promociones'
+        )
+      : this.products.filter(p => p.category === category);
+  }
+
+  // ========== MÉTODOS DE PRODUCTOS ==========
   openAddProductModal() {
-    this.newProduct = {
-      name: '',
-      price: 0,
-      category: ''
-    };
+    this.newProduct = { name: '', price: 0, category: '' };
     this.showAddProductModal = true;
   }
 
@@ -87,10 +137,8 @@ export class Admin implements OnInit {
 
   addNewProduct() {
     if (this.newProduct.name && this.newProduct.price > 0 && this.newProduct.category) {
-      // Generar un ID único
       const newId = this.products.length > 0 ? Math.max(...this.products.map(p => p.id)) + 1 : 1;
       
-      // Crear el producto con la propiedad qty
       const productToAdd: Product = {
         id: newId,
         name: this.newProduct.name,
@@ -99,44 +147,325 @@ export class Admin implements OnInit {
         qty: 0
       };
 
-      console.log('Enviando producto:', productToAdd);
-
-      // Llamar al servicio para agregar el producto a MongoDB
       this.productService.addProduct(productToAdd).subscribe({
         next: (response) => {
-          console.log('Producto agregado:', response);
-          
-          // Agregar el producto localmente
-          this.products.push(productToAdd);
+          this.products.push(response);
           this.filterProducts(this.selectedCategory);
-          
-          // Cerrar el modal
           this.closeAddProductModal();
-          
           alert('Producto agregado exitosamente');
         },
         error: (error) => {
-          console.error('Error completo al agregar producto:', error);
-          console.error('Status:', error.status);
-          console.error('Mensaje:', error.message);
-          console.error('Error body:', error.error);
           alert('Error al agregar el producto: ' + (error.error?.message || error.message));
         }
       });
     }
   }
 
-  // Métodos para el modal de editar orden
+  modifyProduct(product: Product) {
+    if (this.isCombo(product)) {
+      this.openEditComboPromModal(product);
+    } else {
+      const newName = prompt('Nuevo nombre:', product.name);
+      const newPrice = prompt('Nuevo precio:', product.price.toString());
+      const newCategory = prompt('Nueva categoría (bebidas/comida/postres):', product.category || '');
+
+      if (newName && newPrice && newCategory) {
+        const updatedProduct = {
+          ...product,
+          name: newName,
+          price: parseFloat(newPrice),
+          category: newCategory
+        };
+
+        this.productService.updateProduct(updatedProduct).subscribe({
+          next: (response) => {
+            const index = this.products.findIndex(p => p.id === product.id);
+            if (index !== -1) {
+              this.products[index] = response;
+              this.filterProducts(this.selectedCategory);
+            }
+          },
+          error: (error) => {
+            alert('Error al actualizar el producto');
+          }
+        });
+      }
+    }
+  }
+
+  eraseProduct(product: Product) {
+    if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+      this.productService.deleteProduct(product.id).subscribe({
+        next: (response) => {
+          const index = this.products.findIndex(p => p.id === product.id);
+          if (index !== -1) {
+            this.products.splice(index, 1);
+            this.filterProducts(this.selectedCategory);
+          }
+        },
+        error: (error) => {
+          alert('Error al eliminar el producto');
+        }
+      });
+    }
+  }
+
+  // ========== MÉTODOS DE COMBOS/PROMOCIONES ==========
+  openAddComboPromModal() {
+    this.comboPromData = {
+      name: '',
+      price: 0,
+      category: '',
+      description: '',
+      includedProducts: []
+    };
+    this.selectedComboProducts = [];
+    this.selectedProductForCombo = '';
+    this.showAddComboPromModal = true;
+  }
+
+  closeAddComboPromModal() {
+    this.showAddComboPromModal = false;
+  }
+
+  openEditComboPromModal(product: any) {
+    this.editingProduct = { ...product };
+    this.comboPromData = {
+      name: product.name,
+      price: product.price,
+      category: product.category,
+      description: product.description || '',
+      includedProducts: product.includedProducts || []
+    };
+    this.selectedComboProducts = product.includedProducts?.map((item: any) => ({
+      ...item,
+      comboQty: item.qty || 1
+    })) || [];
+    
+    this.showEditComboPromModal = true;
+  }
+
+  closeEditComboPromModal() {
+    this.showEditComboPromModal = false;
+    this.editingProduct = null;
+  }
+
+  addNewComboProm() {
+    if (this.comboPromData.name && this.comboPromData.price > 0 && 
+        this.comboPromData.category && this.selectedComboProducts.length > 0) {
+      
+      const newId = this.products.length > 0 ? Math.max(...this.products.map(p => p.id)) + 1 : 1;
+      
+      // CORREGIR: Asegurar que includedProducts tenga la estructura correcta
+      const includedProducts = this.selectedComboProducts.map(product => ({
+        id: product.id,
+        name: product.name,
+        price: Number(product.price),
+        qty: Number(product.comboQty) || 1,
+        category: product.category
+      }));
+
+      const comboToAdd = {
+        id: newId,
+        name: this.comboPromData.name.trim(),
+        price: Number(this.comboPromData.price),
+        category: this.comboPromData.category,
+        qty: 0,
+        description: this.comboPromData.description?.trim() || '',
+        includedProducts: includedProducts, // ← Esto debe enviarse correctamente
+        isCombo: true
+      };
+
+      console.log('🚀 ENVIANDO COMBO AL BACKEND:', comboToAdd);
+
+      this.productService.addProduct(comboToAdd).subscribe({
+        next: (response) => {
+          console.log('✅ COMBO CREADO:', response);
+          // VERIFICAR que la respuesta incluya includedProducts
+          if (!response.includedProducts || response.includedProducts.length === 0) {
+            console.warn('⚠️ El combo se creó pero includedProducts está vacío');
+          }
+          this.products.push(response);
+          this.filterProducts(this.selectedCategory);
+          this.closeAddComboPromModal();
+          alert('Combo o Promoción agregado exitosamente');
+        },
+        error: (error) => {
+          console.error('❌ ERROR:', error);
+          alert('Error: ' + (error.error?.message || error.message));
+        }
+      });
+    } else {
+      alert('Por favor completa todos los campos y agrega al menos un producto al combo');
+    }
+  }
+
+  updateComboProm() {
+  if (this.comboPromData.name && this.comboPromData.price > 0 && 
+      this.comboPromData.category && this.selectedComboProducts.length > 0 && this.editingProduct) {
+    
+    // CORREGIR: Actualizar includedProducts con los productos seleccionados
+    const includedProducts = this.selectedComboProducts.map(product => ({
+      id: product.id,
+      name: product.name,
+      price: Number(product.price),
+      qty: Number(product.comboQty) || 1,
+      category: product.category
+    }));
+
+    const updatedCombo = {
+      ...this.editingProduct,
+      name: this.comboPromData.name,
+      price: parseFloat(this.comboPromData.price),
+      category: this.comboPromData.category,
+      description: this.comboPromData.description,
+      includedProducts: includedProducts, // ← Asegurar que se envíe
+      isCombo: true
+    };
+
+    console.log('🔄 ACTUALIZANDO COMBO:', updatedCombo);
+
+    this.productService.updateProduct(updatedCombo).subscribe({
+      next: (response) => {
+        console.log('✅ COMBO ACTUALIZADO:', response);
+        const index = this.products.findIndex(p => p.id === this.editingProduct.id);
+        if (index !== -1) {
+          this.products[index] = response;
+          this.filterProducts(this.selectedCategory);
+        }
+        this.closeEditComboPromModal();
+        alert('Combo o Promoción actualizado exitosamente');
+      },
+      error: (error) => {
+        console.error('❌ ERROR ACTUALIZANDO:', error);
+        alert('Error al actualizar el combo o promoción: ' + (error.error?.message || error.message));
+      }
+    });
+  }
+}
+
+  // ========== MÉTODOS DE COMBOS ==========
+  addProductToCombo() {
+  if (this.selectedProductForCombo) {
+    const productId = parseInt(this.selectedProductForCombo);
+    const product = this.products.find(p => p.id === productId);
+    
+    if (product) {
+      const existingProduct = this.selectedComboProducts.find(p => p.id === product.id);
+      
+      if (!existingProduct) {
+        // Agregar a la lista visual
+        this.selectedComboProducts.push({
+          ...product,
+          comboQty: 1
+        });
+        
+        // AGREGAR TAMBIÉN a includedProducts del comboPromData
+        this.comboPromData.includedProducts.push({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          qty: 1,
+          category: product.category
+        });
+        
+        this.calculateComboPrice();
+      }
+      
+      this.selectedProductForCombo = '';
+    }
+  }
+}
+
+  removeProductFromCombo(index: number) {
+    if (confirm('¿Estás seguro de que quieres eliminar este producto del combo?')) {
+      this.selectedComboProducts.splice(index, 1);
+      this.comboPromData.includedProducts.splice(index, 1);
+      this.calculateComboPrice();
+    }
+  }
+
+  increaseComboProductQuantity(index: number) {
+    this.selectedComboProducts[index].comboQty += 1;
+    this.comboPromData.includedProducts[index].qty += 1;
+    this.calculateComboPrice();
+  }
+
+  decreaseComboProductQuantity(index: number) {
+    if (this.selectedComboProducts[index].comboQty > 1) {
+      this.selectedComboProducts[index].comboQty -= 1;
+      this.comboPromData.includedProducts[index].qty -= 1;
+      this.calculateComboPrice();
+    }
+  }
+
+  calculateComboPrice(): number {
+    const calculatedPrice = this.selectedComboProducts.reduce((total, product) => {
+      return total + (product.price * product.comboQty);
+    }, 0);
+    
+    if (this.comboPromData.price === 0 || this.comboPromData.price === calculatedPrice) {
+      this.comboPromData.price = calculatedPrice;
+    }
+    
+    if (this.comboPromData.category === 'promociones' && this.selectedComboProducts.length > 1) {
+      this.comboPromData.price = calculatedPrice * 0.9;
+    }
+    
+    return calculatedPrice;
+  }
+
+  isProductInCombo(productId: number): boolean {
+    return this.selectedComboProducts?.some(p => p.id === productId) || false;
+  }
+
+  getComboProductsTotal(): number {
+    return this.selectedComboProducts.reduce((total, product) => {
+      return total + (product.price * product.comboQty);
+    }, 0);
+  }
+
+  // ========== MÉTODOS DE CÁLCULO ==========
+  getComboRealValue(product: any): number {
+    if (!product.includedProducts || !Array.isArray(product.includedProducts)) {
+      return product.price;
+    }
+    
+    return product.includedProducts.reduce((total: number, item: any) => {
+      return total + (item.price * item.qty);
+    }, 0);
+  }
+
+  getComboExistingSavings(product: any): number {
+    const realValue = this.getComboRealValue(product);
+    return Math.max(0, realValue - product.price);
+  }
+
+  getComboExistingSavingsPercentage(product: any): number {
+    const realValue = this.getComboRealValue(product);
+    if (realValue === 0) return 0;
+    return Math.round((this.getComboExistingSavings(product) / realValue) * 100);
+  }
+
+  // ========== MÉTODOS DE ÓRDENES ==========
+  openCreateOrderModal() {
+    this.newOrder = { table: '', items: [], status: 'pending' };
+    this.selectedProductId = '';
+    this.showCreateOrderModal = true;
+  }
+
+  closeCreateOrderModal() {
+    this.showCreateOrderModal = false;
+  }
+
   openEditOrderModal(order: Order) {
     this.originalOrder = order;
-    
     this.editingOrder = {
       id: order.id,
       table: order.table,
       status: order.status,
-      items: order.items.map(item => ({ ...item })) // Solo copiamos los items
+      items: order.items.map(item => ({ ...item }))
     };
-    
     this.showEditOrderModal = true;
   }
 
@@ -146,219 +475,17 @@ export class Admin implements OnInit {
     this.originalOrder = null;
   }
 
-  updateOrder() {
-    if (this.editingOrder && this.originalOrder) {
-      // Crear objeto sin total para enviar al backend
-      const orderToUpdate: any = {
-        id: this.editingOrder.id,
-        table: this.editingOrder.table,
-        status: this.editingOrder.status,
-        items: this.editingOrder.items.map(item => ({ ...item }))
-      };
-
-      this.ordersService.updateOrder(orderToUpdate).subscribe({
-        next: (response) => {
-          console.log('Orden actualizada:', response);
-          
-          // Actualizar la orden original con los nuevos valores
-          this.originalOrder!.table = this.editingOrder!.table;
-          this.originalOrder!.status = this.editingOrder!.status;
-          this.originalOrder!.items = this.editingOrder!.items.map(item => ({ ...item }));
-          
-          // Si la orden se marcó como completada, quitarla de la vista
-          if (this.editingOrder!.status === 'completed') {
-            const index = this.orders.findIndex(o => o.id === this.editingOrder!.id);
-            if (index !== -1) {
-              this.orders.splice(index, 1);
-            }
-          }
-          
-          this.closeEditOrderModal();
-          alert('Orden actualizada exitosamente');
-        },
-        error: (error) => {
-          console.error('Error al actualizar orden:', error);
-          alert('Error al actualizar la orden');
-        }
-      });
-    }
-  }
-
-  // Métodos para manipular items en la orden
-  increaseItemQuantity(index: number) {
-    if (this.editingOrder) {
-      this.editingOrder.items[index].qty += 1;
-    }
-  }
-
-  decreaseItemQuantity(index: number) {
-    if (this.editingOrder && this.editingOrder.items[index].qty > 1) {
-      this.editingOrder.items[index].qty -= 1;
-    }
-  }
-
-  removeItemFromOrder(index: number) {
-    if (this.editingOrder && confirm('¿Estás seguro de que quieres eliminar este item de la orden?')) {
-      this.editingOrder.items.splice(index, 1);
-    }
-  }
-
-  getEditingOrderTotal(): number {
-    if (!this.editingOrder) return 0;
-    return this.editingOrder.items.reduce((sum, item) => sum + item.price * item.qty, 0);
-  }
-
-  filterProducts(category: string) {
-    this.selectedCategory = category;
-    this.filteredProducts = category === 'all'
-    ? this.products
-    : this.products.filter(p => p.category === category);
-  }
-
-  getItemsString(order: Order): string {
-    return order.items.map(item => `${item.name} x${item.qty}`).join(', ');
-  }
-
-  getPendingOrders(): Order[] {
-    return this.orders.filter(order => order.status === 'pending');
-  }
-
-  getPreparingOrders(): Order[] {
-    return this.orders.filter(order => order.status === 'preparing');
-  }
-
-  changeOrderStatus(order: Order, newStatus: 'canceled' | 'pending' | 'preparing' | 'completed') {
-    if (newStatus === 'canceled') {
-      if (confirm('¿Estás seguro de que quieres cancelar y eliminar esta orden?')) {
-        this.ordersService.deleteOrder(order.id).subscribe({
-          next: (deleteResponse) => {
-            console.log('Orden eliminada:', deleteResponse);
-            // Eliminar del array local
-            const index = this.orders.findIndex(o => o.id === order.id);
-            if (index !== -1) {
-              this.orders.splice(index, 1);
-            }
-            alert('Orden eliminada correctamente');
-          },
-          error: (deleteError) => {
-            console.error('Error al eliminar orden:', deleteError);
-            alert('Error al eliminar la orden');
-          }
-        });
-      }
-    } else {
-      // Para otros estados (pending, preparing, completed)
-      const previousStatus = order.status;
-      
-      // Actualizar el estado local primero
-      order.status = newStatus;
-      
-      // Actualizar en la base de datos
-      this.ordersService.updateOrderStatus(order.id, newStatus).subscribe({
-        next: (response) => {
-          console.log('Estado de orden actualizado:', response);
-          
-          // Para órdenes completadas, quitarlas de la vista local pero mantener en BD
-          if (newStatus === 'completed') {
-            const index = this.orders.findIndex(o => o.id === order.id);
-            if (index !== -1) {
-              this.orders.splice(index, 1);
-            }
-            alert('Orden marcada como lista y completada');
-          }
-        },
-        error: (error) => {
-          console.error('Error al actualizar estado de orden:', error);
-          alert('Error al actualizar el estado de la orden');
-          // Revertir el cambio local
-          order.status = previousStatus;
-        }
-      });
-    }
-  }
-
-  getOrderTotal(order: Order): number {
-    return order.items.reduce((sum, item) => sum + item.price * item.qty, 0);
-  }
-
-  modifyProduct(product: Product) {
-    const newName = prompt('Nuevo nombre del producto:', product.name);
-    const newPrice = prompt('Nuevo precio:', product.price.toString());
-    const newCategory = prompt('Nueva categoría (bebidas/comida/postres):', product.category || '');
-
-    if (newName && newPrice && newCategory) {
-      const updatedProduct = {
-        ...product,
-        name: newName,
-        price: parseFloat(newPrice),
-        category: newCategory
-      };
-
-      this.productService.updateProduct(updatedProduct).subscribe({
-        next: (response) => {
-          console.log('Producto actualizado:', response);
-          // Actualizar localmente
-          const index = this.products.findIndex(p => p.id === product.id);
-          if (index !== -1) {
-            this.products[index] = updatedProduct;
-            this.filterProducts(this.selectedCategory);
-          }
-        },
-        error: (error) => {
-          console.error('Error al actualizar producto:', error);
-          alert('Error al actualizar el producto');
-        }
-      });
-    }
-  }
-
-  eraseProduct(product: Product) {
-    if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-      this.productService.deleteProduct(product.id).subscribe({
-        next: (response) => {
-          console.log('Producto eliminado:', response);
-          const index = this.products.findIndex(p => p.id === product.id);
-          if (index !== -1) {
-            this.products.splice(index, 1);
-            this.filterProducts(this.selectedCategory);
-          }
-        },
-        error: (error) => {
-          console.error('Error al eliminar producto:', error);
-          alert('Error al eliminar el producto');
-        }
-      });
-    }
-  }
-
-  // Métodos para el modal de nueva orden
-  openCreateOrderModal() {
-    this.newOrder = {
-      table: '',
-      items: [],
-      status: 'pending'
-    };
-    this.selectedProductId = '';
-    this.showCreateOrderModal = true;
-  }
-
-  closeCreateOrderModal() {
-    this.showCreateOrderModal = false;
-  }
-
   onProductSelect() {
     if (this.selectedProductId) {
       const productId = parseInt(this.selectedProductId);
       const product = this.products.find(p => p.id === productId);
       
       if (product) {
-        // Verificar si el producto ya está en la orden
         const existingItem = this.newOrder.items.find((item: any) => item.id === product.id);
         
         if (existingItem) {
           existingItem.qty += 1;
         } else {
-          // Agregar nuevo item a la orden
           this.newOrder.items.push({
             id: product.id,
             name: product.name,
@@ -397,37 +524,22 @@ export class Admin implements OnInit {
 
   createNewOrder() {
     if (this.newOrder.table && this.newOrder.items.length > 0) {
-      // Generar ID único para la nueva orden
       const newOrderId = this.orders.length > 0 ? Math.max(...this.orders.map(o => o.id)) + 1 : 1;
       
-      // Crear orden sin total - el backend lo calculará automáticamente
       const orderToCreate: any = {
         id: newOrderId,
         table: this.newOrder.table,
-        items: this.newOrder.items.map((item: any) => ({
-          ...item
-        })),
+        items: this.newOrder.items.map((item: any) => ({ ...item })),
         status: 'pending' as OrderStatus
-        // NO incluir total - el backend lo calculará automáticamente
       };
 
-      console.log('Creando nueva orden:', orderToCreate);
-
-      // Llamar al servicio para crear la orden en MongoDB
       this.ordersService.createOrder(orderToCreate).subscribe({
         next: (response) => {
-          console.log('Orden creada:', response);
-          
-          // Agregar la orden localmente (usar la respuesta del backend que incluye el total calculado)
           this.orders.push(response);
-          
-          // Cerrar el modal
           this.closeCreateOrderModal();
-          
           alert('Orden creada exitosamente');
         },
         error: (error) => {
-          console.error('Error al crear orden:', error);
           alert('Error al crear la orden: ' + (error.error?.message || error.message));
         }
       });
@@ -436,8 +548,123 @@ export class Admin implements OnInit {
     }
   }
 
+  updateOrder() {
+    if (this.editingOrder && this.originalOrder) {
+      const orderToUpdate: any = {
+        id: this.editingOrder.id,
+        table: this.editingOrder.table,
+        status: this.editingOrder.status,
+        items: this.editingOrder.items.map(item => ({ ...item }))
+      };
+
+      this.ordersService.updateOrder(orderToUpdate).subscribe({
+        next: (response) => {
+          this.originalOrder!.table = this.editingOrder!.table;
+          this.originalOrder!.status = this.editingOrder!.status;
+          this.originalOrder!.items = this.editingOrder!.items.map(item => ({ ...item }));
+          
+          if (this.editingOrder!.status === 'completed') {
+            const index = this.orders.findIndex(o => o.id === this.editingOrder!.id);
+            if (index !== -1) {
+              this.orders.splice(index, 1);
+            }
+          }
+          
+          this.closeEditOrderModal();
+          alert('Orden actualizada exitosamente');
+        },
+        error: (error) => {
+          alert('Error al actualizar la orden');
+        }
+      });
+    }
+  }
+
+  // ========== MÉTODOS DE GESTIÓN DE ÓRDENES ==========
+  getPendingOrders(): Order[] {
+    return this.orders.filter(order => order.status === 'pending');
+  }
+
+  getPreparingOrders(): Order[] {
+    return this.orders.filter(order => order.status === 'preparing');
+  }
+
   getCompletedOrders(): Order[] {
     return this.orders.filter(order => order.status === 'completed');
+  }
+
+  getItemsString(order: Order): string {
+    return order.items.map(item => `${item.name} x${item.qty}`).join(', ');
+  }
+
+  getOrderTotal(order: Order): number {
+    return order.items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  }
+
+  changeOrderStatus(order: Order, newStatus: 'canceled' | 'pending' | 'preparing' | 'completed') {
+    if (newStatus === 'canceled') {
+      if (confirm('¿Estás seguro de que quieres cancelar y eliminar esta orden?')) {
+        this.ordersService.deleteOrder(order.id).subscribe({
+          next: (deleteResponse) => {
+            const index = this.orders.findIndex(o => o.id === order.id);
+            if (index !== -1) {
+              this.orders.splice(index, 1);
+            }
+            alert('Orden eliminada correctamente');
+          },
+          error: (deleteError) => {
+            alert('Error al eliminar la orden');
+          }
+        });
+      }
+    } else {
+      const previousStatus = order.status;
+      order.status = newStatus;
+      
+      this.ordersService.updateOrderStatus(order.id, newStatus).subscribe({
+        next: (response) => {
+          if (newStatus === 'completed') {
+            const index = this.orders.findIndex(o => o.id === order.id);
+            if (index !== -1) {
+              this.orders.splice(index, 1);
+            }
+            alert('Orden marcada como lista y completada');
+          }
+        },
+        error: (error) => {
+          alert('Error al actualizar el estado de la orden');
+          order.status = previousStatus;
+        }
+      });
+    }
+  }
+
+  // ========== MÉTODOS DE INTERFAZ ==========
+  increaseItemQuantity(index: number) {
+    if (this.editingOrder) {
+      this.editingOrder.items[index].qty += 1;
+    }
+  }
+
+  decreaseItemQuantity(index: number) {
+    if (this.editingOrder && this.editingOrder.items[index].qty > 1) {
+      this.editingOrder.items[index].qty -= 1;
+    }
+  }
+
+  removeItemFromOrder(index: number) {
+    if (this.editingOrder && confirm('¿Estás seguro de que quieres eliminar este item de la orden?')) {
+      this.editingOrder.items.splice(index, 1);
+    }
+  }
+
+  getEditingOrderTotal(): number {
+    if (!this.editingOrder) return 0;
+    return this.editingOrder.items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  }
+
+  onPriceChange() {
+    // El usuario puede modificar manualmente el precio
   }
 
   logout() {

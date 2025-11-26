@@ -44,10 +44,50 @@ export class Cliente implements OnInit {
     });
   }
 
+  // MÉTODOS PARA COMBOS Y PROMOCIONES
+  getCombos(): any[] {
+    return this.products.filter(product => 
+      product.category === 'combos'
+    );
+  }
+
+  getPromotions(): any[] {
+    return this.products.filter(product => 
+      product.category === 'promociones'
+    );
+  }
+
+  isCombo(product: any): boolean {
+    return product.category === 'combos' || product.category === 'promociones';
+  }
+
+  getComboRealValue(product: any): number {
+    if (!product.includedProducts || !Array.isArray(product.includedProducts)) {
+      return product.price;
+    }
+    
+    return product.includedProducts.reduce((total: number, item: any) => {
+      return total + (item.price * item.qty);
+    }, 0);
+  }
+
+  getComboExistingSavings(product: any): number {
+    const realValue = this.getComboRealValue(product);
+    return Math.max(0, realValue - product.price);
+  }
+
+  getComboExistingSavingsPercentage(product: any): number {
+    const realValue = this.getComboRealValue(product);
+    if (realValue === 0) return 0;
+    return Math.round((this.getComboExistingSavings(product) / realValue) * 100);
+  }
+
   filterProducts(category: string) {
     this.selectedCategory = category;
     if (category === 'all') {
-      this.filteredProducts = this.products;
+      this.filteredProducts = this.products.filter(p => 
+        p.category !== 'combos' && p.category !== 'promociones'
+      );
     } else {
       this.filteredProducts = this.products.filter(p => p.category === category);
     }
