@@ -1,6 +1,5 @@
-/* Estilos específicos para visitante */
 .visitor-banner {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #5a421f 0%, #423124 100%);
   color: white;
   padding: 25px;
   border-radius: 12px;
@@ -53,7 +52,7 @@
 
 .banner-login-btn {
   background: white;
-  color: #667eea;
+  color: #423124;
 }
 
 .banner-register-btn {
@@ -69,6 +68,14 @@
 .banner-register-btn:hover {
   background: rgba(255,255,255,0.1);
   transform: translateY(-2px);
+}
+
+.main-content-vistor {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 25px;
+  max-width: 90%;
+  margin: 0 auto; /* Para centrarlo */
 }
 
 .action-btn.disabled {

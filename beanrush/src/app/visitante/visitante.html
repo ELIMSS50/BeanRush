@@ -1,0 +1,166 @@
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div class="brand">
+      <div class="logo">☕</div>
+      <h2>BeanRush</h2>
+    </div>
+    <div class="user-info">
+      <span class="welcome">¡Hello!, Visitante</span>
+    </div>
+  </div>
+
+  <!-- Banner para visitantes -->
+  <div class="visitor-banner">
+    <div class="banner-content">
+      <div class="banner-icon">👀</div>
+      <div class="banner-text">
+        <h3>Explora nuestro menú</h3>
+        <p>Como visitante puedes ver todos nuestros productos, combos y promociones. Regístrate o inicia sesión para realizar pedidos.</p>
+      </div>
+      <div class="banner-actions">
+        <button class="banner-login-btn" (click)="goToLogin()">
+          Iniciar Sesión
+        </button>
+        <button class="banner-register-btn" (click)="goToRegister()">
+          Registrarse
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="main-content-visitor">
+    <!-- Menú -->
+    <div class="menu-section">
+      <div class="section-header">
+        <h3>🛍️ Productos</h3>
+        <p>Nuestro menú completo</p>
+      </div>
+      
+      <!-- Filtros por categoría -->
+      <div class="category-filters">
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedCategory === 'all'"
+          (click)="filterProducts('all')">
+          Todos
+        </button>
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedCategory === 'bebidas'"
+          (click)="filterProducts('bebidas')">
+          Bebidas
+        </button>
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedCategory === 'comida'"
+          (click)="filterProducts('comida')">
+          Comida
+        </button>
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedCategory === 'postres'"
+          (click)="filterProducts('postres')">
+          Postres
+        </button>
+      </div>
+      
+      <div class="products-grid">
+        <div *ngFor="let product of filteredProducts" class="product-card">
+          <div class="product-image">
+            <div class="image-placeholder">{{product.name.charAt(0)}}</div>
+          </div>
+          <div class="product-info">
+            <h4 class="product-name">{{product.name}}</h4>
+            <p class="product-category">{{product.category}}</p>
+            <div class="product-footer">
+              <span class="product-price">{{product.price | currency:'USD':'symbol':'1.0-0'}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <!-- Combos -->
+    <div class="combos-section">
+      <div class="section-header">
+        <h3>🔄 Combos</h3>
+        <p>Combos especiales con productos seleccionados</p>
+      </div>
+      
+      <div class="products-grid">
+        <div *ngFor="let combo of getCombos()" class="product-card combo-card">
+          <div class="product-image">
+            <div class="image-placeholder">{{combo.name.charAt(0)}}</div>
+          </div>
+          <div class="product-info">
+            <h4>{{combo.name}}</h4>
+            <p class="product-category">{{combo.category}}</p>
+            
+            <!-- Mostrar productos incluidos -->
+            <div *ngIf="combo.includedProducts && combo.includedProducts.length > 0" class="included-products">
+              <small><strong>Incluye:</strong></small>
+              <div *ngFor="let included of combo.includedProducts" class="included-item">
+                <span>{{included.name}} x{{included.qty}}</span>
+              </div>
+            </div>
+            
+            <div class="product-footer">
+              <span class="product-price">{{ combo.price | currency:'USD':'symbol':'1.0-0' }}</span>
+            </div>
+        </div>
+        
+        <div *ngIf="getCombos().length === 0" class="empty-section">
+          <div class="empty-icon">🔄</div>
+          <p>No hay combos disponibles</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Promociones -->
+    <div class="promotions-section">
+      <div class="section-header">
+        <h3>🎯 Promociones</h3>
+        <p>Ofertas especiales con descuentos</p>
+      </div>
+      
+      <div class="products-grid">
+        <div *ngFor="let promo of getPromotions()" class="product-card promo-card">
+          <div class="product-image">
+            <div class="image-placeholder">{{promo.name.charAt(0)}}</div>
+          </div>
+          <div class="product-info">
+            <h4>{{promo.name}}</h4>
+            <p class="product-category">{{promo.category}}</p>
+            
+            <!-- Mostrar productos incluidos -->
+            <div *ngIf="promo.includedProducts && promo.includedProducts.length > 0" class="included-products">
+              <small><strong>Incluye:</strong></small>
+              <div *ngFor="let included of promo.includedProducts" class="included-item">
+                <span>{{included.name}} x{{included.qty}}</span>
+              </div>
+            </div>
+
+            <!-- Mostrar ahorro -->
+            <div *ngIf="getComboExistingSavings(promo) > 0" class="savings-info">
+              <small class="savings-badge">
+                💰 Ahorras: {{ getComboExistingSavings(promo) | currency:'USD':'symbol':'1.0-0' }}
+                ({{ getComboExistingSavingsPercentage(promo) }}%)
+              </small>
+            </div>
+
+            <div class="product-footer">
+              <span class="product-price">{{ promo.price | currency:'USD':'symbol':'1.0-0' }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div *ngIf="getPromotions().length === 0" class="empty-section">
+          <div class="empty-icon">🎯</div>
+          <p>No hay promociones disponibles</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>

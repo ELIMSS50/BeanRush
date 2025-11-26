@@ -94,4 +94,8 @@ export class Login {
   newAccount() {
     this.router.navigate(['/registro']);
   }
+
+  enterWithoutAccount() {
+    this.router.navigate(['/visitante']);
+  }
 }
